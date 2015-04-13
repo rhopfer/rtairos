@@ -1,0 +1,7 @@
+%% Create a Makefile for lazy people
+%selectfile NULL_FILE
+%assign isunix = FEVAL("isunix")
+
+%if %<isunix>
+	%matlab unix("ln -sf %<CompiledModel.Name>.mk %<CompiledModel.Name>_rtairos/Makefile")
+%endif
