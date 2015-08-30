@@ -138,7 +138,7 @@ static RT_MODEL *rtM;
 #define STOP_TARGET		3
 #define UPDATE_PARAM		4
 
-#define MAX_DATA_SIZE		256
+#define MAX_DATA_SIZE		512
 
 #define rt_MainTaskPriority		97
 #define rt_HostInterfaceTaskPriority	96
