@@ -1,16 +1,16 @@
 # RTAI-ROS
 
-This project adds ROS support to [RTAI-Lab](https://www.rtai.org/?About_RTAI-Lab).
+This project adds [ROS](http://www.ros.org) support to [RTAI-Lab](https://www.rtai.org/?About_RTAI-Lab).
 As with RTAI-Lab it allows to generate code directly from Matlab/Simulink that can be compiled and executed on the the RTAI real-time Linux.
 Unlike RTAI-Lab it is no longer required to use special software like xrtailab to communicate with a running real-time process.
-Instead you can use the tools provided by [ROS](http://www.ros.org).
+Instead you can use the tools provided by ROS.
 The current version is also fully compatible with RTAI-Lab tools, but this will probably removed in future versions.
 
 RTAI-ROS was created as a part of my master theses in mechatronics at the [Institute of Robotics](http://www.robotik.jku.at/) at the [Johannes Kepler University Linz](http://www.jku.at/).
 
 ## Installation
 
-1. Copy the whole directory to $(MATLABROOT)/rtw/c/ of your Matlab installation.
+1. Copy the whole directory to `$(MATLABROOT)/rtw/c/` of your Matlab installation.
 2. In Matlab change to rtairos directory and run *setup*:
   ```
 >> matlabroot
@@ -36,4 +36,4 @@ ans =
 The Matlab/Simulink blocks to connect with ROS are accessable via the Simulink Library Browser.
 To generate code open the RTW configuration (Simulation → Configuration Parameters → Real-Time Workshop) of your model and set the system target file to **rtairos.tlc**.
 
-For the moment please check *rosdemo.mdl* in the examples directory. Some documentation will be added soon.
+For the moment there is only a german documentation extracted from the master theses.
