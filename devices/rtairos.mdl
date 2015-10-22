@@ -35,9 +35,9 @@ Library {
   ModifiedByFormat	  "%<Auto>"
   LastModifiedBy	  "rho"
   ModifiedDateFormat	  "%<Auto>"
-  LastModifiedDate	  "Fri Jan 30 03:30:43 2015"
+  LastModifiedDate	  "Thu Oct 22 20:07:08 2015"
   RTWModifiedTimeStamp	  0
-  ModelVersionFormat	  "1.%<AutoIncrement:51>"
+  ModelVersionFormat	  "1.%<AutoIncrement:52>"
   ConfigurationManager	  "None"
   SimulationMode	  "normal"
   LinearizationMsg	  "none"
@@ -359,6 +359,7 @@ Library {
 	  FunctionName		  "sfun_ros_config"
 	  Parameters		  "rate,ns,pub_stack,sub_stack,show_params"
 	  EnableBusSupport	  off
+	  MaskType		  "ROS Config"
 	  MaskPromptString	  "Rate (Hz):|Namespace:|Publisher queue size:|Subscriber queue size:|Expose parameters:"
 	  MaskStyleString	  "edit,edit,edit,edit,popup(No|Read Only|Writeable)"
 	  MaskTunableValueString  "off,off,off,off,off"
