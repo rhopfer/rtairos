@@ -6,7 +6,7 @@ Unlike RTAI-Lab it is no longer required to use special software like xrtailab t
 Instead you can use the tools provided by ROS.
 The current version is also fully compatible with RTAI-Lab tools, but this will probably removed in future versions.
 
-RTAI-ROS was created as a part of my master theses in mechatronics at the [Institute of Robotics](http://www.robotik.jku.at/) at the [Johannes Kepler University Linz](http://www.jku.at/).
+RTAI-ROS was created as a part of my master thesis in mechatronics at the [Institute of Robotics](http://www.robotik.jku.at/) at the [Johannes Kepler University Linz](http://www.jku.at/).
 
 ## Installation
 
@@ -36,4 +36,4 @@ ans =
 The Matlab/Simulink blocks to connect with ROS are accessable via the Simulink Library Browser.
 To generate code open the RTW configuration (Simulation → Configuration Parameters → Real-Time Workshop) of your model and set the system target file to **rtairos.tlc**.
 
-For the moment there is only a german documentation extracted from the master theses.
+For the moment there is only a german documentation extracted from the master thesis.
