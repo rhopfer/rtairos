@@ -22,9 +22,15 @@
   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
 */
 
+#define RTAIROS_VERSION "1.0"
+#define RTAIROS_NAME "RTAI-ROS"
+
 #define _XOPEN_SOURCE	600
+#define DEFAULT_STACKING 30000
+#define DEFAULT_CPUMAP 0xF
 
 extern "C" {
+#include <popt.h>
 #include <float.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -172,7 +178,7 @@ static RT_TASK **rt_SubRateTasks;
 static pthread_t rosThread;
 static RT_TASK *rt_rosTask;
 
-const char *HostInterfaceTaskName     = "IFTASK";
+const char *HostInterfaceTaskName     = "HIT";
 const char *TargetScopeMbxID          = "RTS";
 const char *TargetALogMbxID           = "RAL";
 const char *TargetLogMbxID            = "RTL";
@@ -184,11 +190,12 @@ const char *RosShmID                  = "SHM";
 const char *RosSemID                  = "SEM";
 
 static volatile int Verbose       = 0;
-static volatile int UseHRT        = 1;
+static volatile int UseSoftRT     = 0;
 static volatile int WaitToStart   = 0;
 static volatile int IsRunning     = 0;
-static volatile int InternalTimer = 1;
-static volatile int ClockTick     = 1;
+static volatile int ExternalTimer = 0;
+static volatile int OneShot       = 0;
+static volatile int Priority      = 0;
 static volatile int CpuMap	  = 0xF;
 static volatile int StackInc	  = 30000;
 static volatile int endBaseRate   = 0;
@@ -455,7 +462,7 @@ static void *rt_SubRate(int *arg)
   rt_task_use_fpu(rt_SubRateTasks[sample], 1);
   rt_grow_and_lock_stack(StackInc);
 
-  if (UseHRT) {
+  if (!UseSoftRT) {
     rt_make_hard_real_time();
   }
   while (!endSubRate) {
@@ -465,7 +472,7 @@ static void *rt_SubRate(int *arg)
     UPDATED(rtM, sample);
     rt_SimUpdateDiscreteTaskTime(rtmGetTPtr(rtM), rtmGetTimingData(rtM), sample);
   }
-  if (UseHRT) {
+  if (!UseSoftRT) {
     rt_make_soft_real_time();
   }
 
@@ -499,7 +506,7 @@ static void *rt_BaseRate(void *args)
   iopl(3);
   rt_task_use_fpu(rt_BaseRateTask, 1);
   rt_grow_and_lock_stack(StackInc);
-  if (UseHRT) {
+  if (!UseSoftRT) {
     rt_make_hard_real_time();
   }
   rt_rpc(rt_MainTask,0,(void *)myname);
@@ -510,7 +517,7 @@ static void *rt_BaseRate(void *args)
     RTTSKend=rt_get_cpu_time_ns();
 #endif
 //    WaitTimingEvent(TimingEventArg);
-    if (InternalTimer) rt_task_wait_period();
+    if (!ExternalTimer) rt_task_wait_period();
     if (endBaseRate) break;
 
 #ifdef TASKDURATION
@@ -548,7 +555,7 @@ static void *rt_BaseRate(void *args)
 
   }
 
-  if (UseHRT) {
+  if (!UseSoftRT) {
     rt_make_soft_real_time();
   }
 
@@ -1697,10 +1704,10 @@ static int_T rt_Main(RT_MODEL * (*model_name)(void), int_T priority)
   }
 
   rt_BaseTaskPeriod = (RTIME)(1000000000.0*rtmGetStepSize(rtM));
-  if (InternalTimer) {
+  if (!ExternalTimer) {
 //    WaitTimingEvent = (void *)rt_task_wait_period;
     if (!(hard_timers_cnt = (SEM *)rt_get_adr(nam2num("HTMRCN")))) {
-      if (!ClockTick) {
+      if (OneShot) {
 	rt_set_oneshot_mode();
 	start_rt_timer(0);
 	rt_BaseRateTick = nano2count(rt_BaseTaskPeriod);
@@ -1764,7 +1771,7 @@ static int_T rt_Main(RT_MODEL * (*model_name)(void), int_T priority)
   pthread_join(rosThread, NULL);
 
   endBaseRate = 1;
-  if (!InternalTimer) {
+  if (!!ExternalTimer) {
 //    SendTimingEvent(TimingEventArg);
   }
   pthread_join(rt_BaseRateThread, NULL);
@@ -1788,7 +1795,7 @@ static int_T rt_Main(RT_MODEL * (*model_name)(void), int_T priority)
   rt_send(rt_HostInterfaceTask, 0);
   pthread_join(rt_HostInterfaceThread, NULL);
 
-  if (InternalTimer) {
+  if (!ExternalTimer) {
     if (!rt_sem_wait_if(hard_timers_cnt)) {
       rt_sem_delete(hard_timers_cnt);
     }
@@ -1817,188 +1824,125 @@ static void endme(int dummy)
   endex = 1;
 }
 
-struct option options[] = {
-  { "usage",      0, 0, 'u' },
-  { "help",       0, 0, 'h' },
-  { "verbose",    0, 0, 'v' },
-  { "version",    0, 0, 'V' },
-  { "soft",       0, 0, 's' },
-  { "wait",       0, 0, 'w' },
-  { "priority",   1, 0, 'p' },
-  { "finaltime",  1, 0, 'f' },
-  { "name",       1, 0, 'n' },
-  { "idscope",    1, 0, 'i' },
-  { "idlog",      1, 0, 'l' },
-  { "idalog",     1, 0, 'a' },
-  { "idmeter",    1, 0, 't' },
-  { "idled",      1, 0, 'd' },
-  { "idsynch",    1, 0, 'y' },
-  { "cpumap",     1, 0, 'c' },
-  { "external",   0, 0, 'e' },
-  { "oneshot",    0, 0, 'o' },
-  { "stack",      1, 0, 'm' },
-  { "rosnode",    1, 0, 'N' }
+enum {
+    OPT_VERSION = 1000,
+    OPT_RTAILAB,
+    OPT_FINALTIME,
+    OPT_IFTASK,
+    OPT_SCOPEID,
+    OPT_LOGID,
+    OPT_ALOGID,
+    OPT_METERID,
+    OPT_LEDID,
+    OPT_SYNCHID,
+    OPT_RANDOM,
+    OPT_NOROSOUT
 };
 
-void print_usage(void)
-{
-  fputs(
-	("\nUsage:  'RT-model-name' [OPTIONS]\n"
-	 "\n"
-	 "OPTIONS:\n"
-	 "  -u, --usage\n"
-	 "  -h, --help\n"
-	 "      print this message\n"
-	 "  -v, --verbose\n"
-	 "      verbose output\n"
-	 "  -V, --version\n"
-	 "      print rt_main version\n"
-	 "  -s, --soft\n"
-	 "      run RT-model in soft real time (default hard RT)\n"
-	 "  -w, --wait\n"
-	 "      wait to start\n"
-	 "  -p <priority>, --priority <priority>\n"
-	 "      set the priority at which the RT-model's highest priority task will run (default 0)\n"
-	 "  -f <finaltime>, --finaltime <finaltime>\n"
-	 "      set the final time (default infinite)\n"
-	 "  -n <ifname>, --name <ifname>\n"
-	 "      set the name of the host interface task (default IFTASK)\n"
-	 "  -i <scopeid>, --idscope <scopeid>\n"
-	 "      set the scope mailboxes identifier (default RTS)\n"
-	 "  -l <logid>, --idlog <logid>\n"
-	 "      set the log mailboxes identifier (default RTL)\n"
-	 "  -a <alogid>, --idalog <alogid>\n"
-	 "      set the automatic log mailboxes identifier (default RAL)\n"
-	 "  -t <meterid>, --idmeter <meterid>\n"
-	 "      set the meter mailboxes identifier (default RTM)\n"
-	 "  -d <ledid>, --idled <ledid>\n"
-	 "      set the led mailboxes identifier (default RTE)\n"
-	 "  -y <synchid>, --idsynch <synchid>\n"
-	 "      set the synchronoscope mailboxes identifier (default RTY)\n"
-	 "  -c <cpumap>, --cpumap <cpumap>\n"
-	 "      (1 << cpunum) on which the RT-model runs (default: let RTAI choose)\n"
-	 "  -e, --external\n"
-	 "      RT-model timed by an external resume (default internal)\n"
-	 "  -o, --oneshot\n"
-	 "      the hard timer will run in oneshot mode (default periodic)\n"
-	 "  -m <stack>, --stack <stack>\n"
-	 "      set a guaranteed stack size extension (default 30000)\n"
-	 "  -N <nodename>, --name <nodename>\n"
-	 "      set the name of the ros node (default model-name)\n"
-	 "\n")
-	,stderr);
-  exit(0);
+static struct poptOption long_options[] = {
+	/* longName, shortName, argInfo, argPtr, value, descrip, argDesc */
+	{ "verbose", 'v', POPT_ARG_NONE, (int *)&Verbose, 'v', "Verbose output", 0 },
+	{ "version", 0, POPT_ARG_NONE, 0, OPT_VERSION, "Print version information", 0 },
+//	{ "rtailab", 0, POPT_ARG_NONE, &rtailab, OPT_RTAILAB, "start the legacy RTAI-Lab host interface task", 0 },
+	{ "wait", 'w', POPT_ARG_NONE, (int *)&WaitToStart, 'w', "Wait to start", 0 },
+	{ "soft", 's', POPT_ARG_NONE, (int *)&UseSoftRT, 's', "Run RT-model in soft instead of hard real-time", 0 },
+	{ "priority", 'p', POPT_ARG_INT, (int *)&Priority, 'p', "Set the priority for the real-time task", "0" },
+	{ "finaltime", 0, POPT_ARG_FLOAT, &FinalTime, OPT_FINALTIME, "Set the final time", "inf" },
+	{ "ifname", 0, POPT_ARG_STRING, &HostInterfaceTaskName, OPT_IFTASK, "Set the host interface task identifier", HostInterfaceTaskName },
+	{ "scopeid", 0, POPT_ARG_STRING, &TargetScopeMbxID, OPT_SCOPEID, "Set the scope mailboxes identifier", TargetScopeMbxID },
+	{ "logid", 0, POPT_ARG_STRING, &TargetLogMbxID, OPT_LOGID, "Set the log mailboxes identifier", TargetLogMbxID },
+	{ "alogid", 0, POPT_ARG_STRING, &TargetALogMbxID, OPT_ALOGID, "Set the automatic log mailboxes identifier", TargetALogMbxID },
+	{ "meterid", 0, POPT_ARG_STRING, &TargetMeterMbxID, OPT_METERID, "Set the meter mailboxes identifier", TargetMeterMbxID },
+	{ "ledid", 0, POPT_ARG_STRING, &TargetLedMbxID, OPT_LEDID, "Set the led mailboxes identifier", TargetLedMbxID },
+	{ "synchid", 0, POPT_ARG_STRING, &TargetSynchronoscopeMbxID, OPT_SYNCHID, "Set the synchronoscope mailboxes identifier", TargetSynchronoscopeMbxID },
+	{ "cpumap", 'c', POPT_ARG_INT, (int *)&CpuMap, 'c', "(1 << cpunum) on which the RT-model runs", STR(DEFAULT_CPUMAP) },
+	{ "external", 'e', POPT_ARG_NONE, (int *)&ExternalTimer, 'e', "RT-model timed by an external resume", 0 },
+	{ "oneshot", 'o', POPT_ARG_NONE, (int *)&OneShot, 'o', "the hard timer will run in oneshot mode", 0 },
+	{ "stack", 'm', POPT_ARG_INT, (int *)&StackInc, 'm', "set a guaranteed stack size extension", STR(DEFAULT_STACKING) },
+//	{ "rosnode", 'N', POPT_ARG_STRING, &rosNode, 'N', "set the name of the ros node", STR(MODEL) },
+//	{ "random", 0, POPT_ARG_NONE, &randomRosName, OPT_RANDOM, "adds a random number to the end of your node's name, to make it unique", 0 },
+//	{ "norosout", 0, POPT_ARG_NONE, &norosout, OPT_NOROSOUT, "don't broadcast rosconsole output to the /rosout topic", 0 },
+//	{ "namespace", 'n', POPT_ARG_STRING, &rosNamespace, 'n', "set a namespace", rosNamespace },
+	POPT_AUTOHELP
+	{ 0, 0, 0, 0, 0, 0 }
+};
+
+void print_usage(poptContext optCon, int exitcode, const char *error, const char *addl) {
+    poptPrintUsage(optCon, stderr, 0);
+    if (error) fprintf(stderr, "%s: %s\n", error, addl);
+    poptFreeContext(optCon);
+    exit(exitcode);
 }
 
-int main(int argc, char **argv)
-{
-  int priority = 0;
-  int c, option_index = 0;
+static void print_version() {
+    fprintf(stderr, "%s %s\n", RTAIROS_NAME, RTAIROS_VERSION);
+    exit(0);
+}
 
-  signal(SIGINT, endme);
-  signal(SIGTERM, endme);
+static void print_rtailab() {
+	printf("RTAI-Lab\n========\n");
+	printf("  Host Interface ID : %s\n", HostInterfaceTaskName);
+	printf("  Scope ID          : %s\n", TargetScopeMbxID);
+	printf("  Log ID            : %s\n", TargetLogMbxID);
+	printf("  Async. Scope ID   : %s\n", TargetALogMbxID);
+	printf("  Meter ID          : %s\n", TargetMeterMbxID);
+	printf("  Led ID            : %s\n", TargetLedMbxID);
+	printf("  Sync. Scope ID    : %s\n", TargetSynchronoscopeMbxID);
+	printf("\n");
+}
 
-  while (1) {
-    c = getopt_long(argc, argv, "uhvVsweop:f:n:i:l:a:d:t:y:c:m:N:", options, &option_index);
-    if (c == -1)
-      break;
-    switch (c) {
-    case 'v':
-      Verbose = 1;
-      break;
-    case 'V':
-      fputs("rt_main version " RTAILAB_VERSION "\n", stderr);
-      exit(0);
-    case 'p':
-      if (isalpha(optarg[0])) {
-	fprintf(stderr, "Invalid priority value\n");
-	exit(1);
-      }
-      priority = atoi(optarg);
-      if (priority < 0) {
-	fprintf(stderr, "Invalid priority value\n");
-	exit(1);
-      }
-      break;
-    case 's':
-      UseHRT = 0;
-      break;
-    case 'f':
-      if (strstr(optarg, "inf")) {
-	FinalTime = RUN_FOREVER;
-      } else {
-	if (isalpha(optarg[0])) {
-	  fprintf(stderr, "Invalid final time value\n");
-	  exit(1);
+int parse_arguments(int *argc_p, const char ***argv_p) {
+    static poptContext optCon;
+    const char **argv = *argv_p;
+    int argc = *argc_p;
+    int opt;
+
+    optCon = poptGetContext(NULL, argc, argv, long_options, 0);
+
+    while ((opt = poptGetNextOpt(optCon)) > 0) {
+        switch (opt) {
+            case OPT_VERSION:
+                print_version();
+                break;
+        }
+    }
+
+	// Error processing
+    if (opt < -1) {
+        print_usage(optCon, 1, poptBadOption(optCon, opt), poptStrerror(opt));
+    }
+	return 0;
+}
+
+int main(int argc, char **argv) {
+	//int orig_argc = argc;
+	//char **orig_argv = argv;
+
+	signal(SIGINT, endme);
+	signal(SIGTERM, endme);
+
+	parse_arguments(&argc, (const char ***) &argv);
+
+	ros::init(argc, argv, rosNode, ros::init_options::NoSigintHandler);
+
+	if (Verbose) {
+		printf("\nTarget settings\n");
+		printf("===============\n");
+		printf("  Real-time : %s\n", UseSoftRT ? "SOFT" : "HARD");
+		printf("  Timing    : %s / ", ExternalTimer ? "external" : "internal");
+		printf("%s\n", OneShot ? "oneshot" : "periodic");
+		printf("  Priority  : %d\n", Priority);
+		if (FinalTime > 0) {
+			printf("  Finaltime : %f [s]\n", FinalTime);
+		} else {
+			printf("  Finaltime : RUN FOREVER\n");
+		}
+		printf("  CPU map   : 0x%x\n", CpuMap);
+		printf("\n");
 	}
-	FinalTime = atof(optarg);
-      }
-      break;
-    case 'w':
-      WaitToStart = 1;
-      break;
-    case 'u':
-    case 'h':
-      print_usage();
-      exit(0);
-    case 'n':
-      HostInterfaceTaskName = strdup(optarg);
-      break;
-    case 'i':
-      TargetScopeMbxID = strdup(optarg);
-      break;
-    case 'l':
-      TargetLogMbxID = strdup(optarg);
-      break;
-    case 't':
-      TargetMeterMbxID = strdup(optarg);
-      break;
-    case 'a':
-      TargetALogMbxID = strdup(optarg);
-      break;
-    case 'd':
-      TargetLedMbxID = strdup(optarg);
-      break;
-    case 'y':
-      TargetSynchronoscopeMbxID = strdup(optarg);
-      break;
-    case 'c':
-      if (!(CpuMap = atoi(optarg))) {
-	CpuMap = 0xF;
-      }
-      break;
-    case 'e':
-      InternalTimer = 0;
-      break;
-    case 'o':
-      ClockTick = 0;
-      break;
-    case 'm':
-      StackInc = atoi(optarg);
-      break;
-	case 'N':
-	  rosNode = std::string(optarg);
-    default:
-      break;
-    }
-  }
+	if (Verbose) {
+		print_rtailab();
+	}
 
-  ros::init(argc, argv, rosNode, ros::init_options::NoSigintHandler);
-
-  if (Verbose) {
-    printf("\nTarget settings\n");
-    printf("===============\n");
-    printf("  Real-time : %s\n", UseHRT ? "HARD" : "SOFT");	
-    printf("  Timing    : %s / ", InternalTimer ? "internal" : "external");
-    printf("%s\n", ClockTick ? "periodic" : "oneshot");
-    printf("  Priority  : %d\n", priority);
-    if (FinalTime > 0) {
-      printf("  Finaltime : %f [s]\n", FinalTime);
-    } else {
-      printf("  Finaltime : RUN FOREVER\n");
-    }
-    printf("  CPU map   : %x\n\n", CpuMap);
-  }
-
-  return rt_Main(MODEL, priority);
+	return rt_Main(MODEL, Priority);
 }
