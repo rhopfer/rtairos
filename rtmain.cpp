@@ -196,7 +196,7 @@ static volatile int IsRunning     = 0;
 static volatile int ExternalTimer = 0;
 static volatile int OneShot       = 0;
 static volatile int Priority      = 0;
-static volatile int CpuMap	  = 0xF;
+static volatile int CpuMap	      = 0xF;
 static volatile int StackInc	  = 30000;
 static volatile int endBaseRate   = 0;
 static volatile int endInterface  = 0;
@@ -230,7 +230,8 @@ SimStruct *rtaiSynchronoscope[MAX_RTAI_SYNCHS];
 rosConfig_t rosConfig = {ROS_SAMPLETIME, "", true, PUBLISHER_STACK_SIZE, SUBSCRIBER_STACK_SIZE};
 rosBlockConfig_t rosBlockConfigs[MAX_ROS_BLOCKS];
 unsigned int numRosBlocks = 0;
-std::string rosNode(STR(MODEL));
+const char *rosNode = STR(MODEL);
+
 
 #define MAX_COMEDI_DEVICES        10
 
@@ -961,7 +962,7 @@ struct RosJointState : RosObject {
 
 static void rosCleanParams() {
 	ros::NodeHandle nh;
-	nh.deleteParam(rosNode);
+	nh.deleteParam(std::string(rosNode));
 }
 
 static void rosPublishParams() {
@@ -1214,7 +1215,7 @@ static void *rosInterface(void *args) {
 	ros::ServiceServer startSrv;
 	char srvName[100];
 	if (WaitToStart) {
-		snprintf(srvName, 100, "%s/start", rosNode.c_str());
+		snprintf(srvName, 100, "%s/start", rosNode);
 		startSrv = nh.advertiseService(srvName, &rosStart);
 	}
 
@@ -1223,10 +1224,10 @@ static void *rosInterface(void *args) {
 	ros::ServiceServer srvRefreshParam;
 	if (rosConfig.exposeParams > 0) {
 		rosPublishParams();
-		snprintf(srvName, 100, "/%s/refresh_parameters", rosNode.c_str());
+		snprintf(srvName, 100, "/%s/refresh_parameters", rosNode);
 		srvRefreshParam = nh.advertiseService(srvName, &rosRefreshParams);
 		if (rosConfig.exposeParams > 1) {
-			snprintf(srvName, 100, "/%s/set_parameters", rosNode.c_str());
+			snprintf(srvName, 100, "/%s/set_parameters", rosNode);
 			srvSetParam = nh.advertiseService(srvName, &rosSetParams);
 		}
 	}
@@ -1859,7 +1860,7 @@ static struct poptOption long_options[] = {
 	{ "external", 'e', POPT_ARG_NONE, (int *)&ExternalTimer, 'e', "RT-model timed by an external resume", 0 },
 	{ "oneshot", 'o', POPT_ARG_NONE, (int *)&OneShot, 'o', "the hard timer will run in oneshot mode", 0 },
 	{ "stack", 'm', POPT_ARG_INT, (int *)&StackInc, 'm', "set a guaranteed stack size extension", STR(DEFAULT_STACKING) },
-//	{ "rosnode", 'N', POPT_ARG_STRING, &rosNode, 'N', "set the name of the ros node", STR(MODEL) },
+	{ "rosnode", 'N', POPT_ARG_STRING, &rosNode, 'N', "set the name of the ros node", STR(MODEL) },
 //	{ "random", 0, POPT_ARG_NONE, &randomRosName, OPT_RANDOM, "adds a random number to the end of your node's name, to make it unique", 0 },
 //	{ "norosout", 0, POPT_ARG_NONE, &norosout, OPT_NOROSOUT, "don't broadcast rosconsole output to the /rosout topic", 0 },
 //	{ "namespace", 'n', POPT_ARG_STRING, &rosNamespace, 'n', "set a namespace", rosNamespace },
@@ -1923,7 +1924,7 @@ int main(int argc, char **argv) {
 
 	parse_arguments(&argc, (const char ***) &argv);
 
-	ros::init(argc, argv, rosNode, ros::init_options::NoSigintHandler);
+	ros::init(argc, argv, std::string(rosNode), ros::init_options::NoSigintHandler);
 
 	if (Verbose) {
 		printf("\nTarget settings\n");
