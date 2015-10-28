@@ -205,6 +205,7 @@ static RTIME rt_BaseRateTick;
 #ifdef MULTITASKING
 static volatile int endSubRate    = 0;
 #endif
+static int EnableHostInterface = 0;
 
 static volatile int endex;
 static volatile bool endRos = 0;
@@ -1650,18 +1651,20 @@ static int_T rt_Main(RT_MODEL * (*model_name)(void), int_T priority)
     goto finish;
   }
 
-  if ((pthread_create(&rt_HostInterfaceThread, NULL, rt_HostInterface, NULL)) != 0) {
-    fprintf(stderr, "Failed to create HostInterfaceThread.\n");
-    TERMINATE(rtM);
-    fprintf(stderr, "Target is terminated.\n");
-    goto finish;
-  }
-  err_timeout.tv_sec = (long int)(time(NULL)) + 1;
-  err_timeout.tv_nsec = 0;
-  if ((sem_timedwait(&err_sem, &err_timeout)) != 0) {
-    TERMINATE(rtM);
-    fprintf(stderr, "Target is terminated.\n");
-    goto finish;
+  if (EnableHostInterface) {
+	  if ((pthread_create(&rt_HostInterfaceThread, NULL, rt_HostInterface, NULL)) != 0) {
+		fprintf(stderr, "Failed to create HostInterfaceThread.\n");
+		TERMINATE(rtM);
+		fprintf(stderr, "Target is terminated.\n");
+		goto finish;
+	  }
+	  err_timeout.tv_sec = (long int)(time(NULL)) + 1;
+	  err_timeout.tv_nsec = 0;
+	  if ((sem_timedwait(&err_sem, &err_timeout)) != 0) {
+		TERMINATE(rtM);
+		fprintf(stderr, "Target is terminated.\n");
+		goto finish;
+	  }
   }
 
 #ifdef MULTITASKING
@@ -1678,8 +1681,23 @@ static int_T rt_Main(RT_MODEL * (*model_name)(void), int_T priority)
   if ((pthread_create(&rt_BaseRateThread, NULL, rt_BaseRate, &priority)) != 0) {
     fprintf(stderr, "Failed to create BaseRateThread.\n");
     endInterface = 1;
-    rt_send(rt_HostInterfaceTask, 0);
-    pthread_join(rt_HostInterfaceThread, NULL);
+	if (EnableHostInterface) {
+		rt_send(rt_HostInterfaceTask, 0);
+		pthread_join(rt_HostInterfaceThread, NULL);
+	}
+    TERMINATE(rtM);
+    fprintf(stderr, "Target is terminated.\n");
+    goto finish;
+  }
+
+  err_timeout.tv_sec = (long int)(time(NULL)) + 1;
+  err_timeout.tv_nsec = 0;
+  if ((sem_timedwait(&err_sem, &err_timeout)) != 0) {
+    endInterface = 1;
+	if (EnableHostInterface) {
+		rt_send(rt_HostInterfaceTask, 0);
+		pthread_join(rt_HostInterfaceThread, NULL);
+	}
     TERMINATE(rtM);
     fprintf(stderr, "Target is terminated.\n");
     goto finish;
@@ -1691,17 +1709,6 @@ static int_T rt_Main(RT_MODEL * (*model_name)(void), int_T priority)
 	  }
   } else {
 	  ROS_ERROR("Failed to contact master [%s]. ROS thread disabled!", ros::master::getURI().c_str());
-  }
-
-  err_timeout.tv_sec = (long int)(time(NULL)) + 1;
-  err_timeout.tv_nsec = 0;
-  if ((sem_timedwait(&err_sem, &err_timeout)) != 0) {
-    endInterface = 1;
-    rt_send(rt_HostInterfaceTask, 0);
-    pthread_join(rt_HostInterfaceThread, NULL);
-    TERMINATE(rtM);
-    fprintf(stderr, "Target is terminated.\n");
-    goto finish;
   }
 
   rt_BaseTaskPeriod = (RTIME)(1000000000.0*rtmGetStepSize(rtM));
@@ -1793,8 +1800,10 @@ static int_T rt_Main(RT_MODEL * (*model_name)(void), int_T priority)
   }
 
   endInterface = 1;
-  rt_send(rt_HostInterfaceTask, 0);
-  pthread_join(rt_HostInterfaceThread, NULL);
+  if (EnableHostInterface) {
+    rt_send(rt_HostInterfaceTask, 0);
+    pthread_join(rt_HostInterfaceThread, NULL);
+  }
 
   if (!ExternalTimer) {
     if (!rt_sem_wait_if(hard_timers_cnt)) {
@@ -1844,7 +1853,7 @@ static struct poptOption long_options[] = {
 	/* longName, shortName, argInfo, argPtr, value, descrip, argDesc */
 	{ "verbose", 'v', POPT_ARG_NONE, (int *)&Verbose, 'v', "Verbose output", 0 },
 	{ "version", 0, POPT_ARG_NONE, 0, OPT_VERSION, "Print version information", 0 },
-//	{ "rtailab", 0, POPT_ARG_NONE, &rtailab, OPT_RTAILAB, "start the legacy RTAI-Lab host interface task", 0 },
+	{ "rtailab", 0, POPT_ARG_NONE, &EnableHostInterface, OPT_RTAILAB, "start the legacy RTAI-Lab host interface task", 0 },
 	{ "wait", 'w', POPT_ARG_NONE, (int *)&WaitToStart, 'w', "Wait to start", 0 },
 	{ "soft", 's', POPT_ARG_NONE, (int *)&UseSoftRT, 's', "Run RT-model in soft instead of hard real-time", 0 },
 	{ "priority", 'p', POPT_ARG_INT, (int *)&Priority, 'p', "Set the priority for the real-time task", "0" },
@@ -1941,7 +1950,7 @@ int main(int argc, char **argv) {
 		printf("  CPU map   : 0x%x\n", CpuMap);
 		printf("\n");
 	}
-	if (Verbose) {
+	if (Verbose && EnableHostInterface) {
 		print_rtailab();
 	}
 
