@@ -1,0 +1,526 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>RTAI-ROS 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="None" href="index.html#document-index" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="nav-item nav-item-0"><a href="index.html#document-index">RTAI-ROS 1.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="rtai-ros-documentation">
+<h1>RTAI-ROS documentation<a class="headerlink" href="#rtai-ros-documentation" title="Permalink to this headline">¶</a></h1>
+<div class="toctree-wrapper compound">
+<span id="document-installation"></span><div class="section" id="installation">
+<h2>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h2>
+<ol class="arabic">
+<li><p class="first">Copy the <code class="docutils literal"><span class="pre">rtairos</span></code> directory to <code class="docutils literal"><span class="pre">$(MATLABROOT)/rtw/c/</span></code>, where <code class="docutils literal"><span class="pre">$(MATLABROOT)</span></code> is the root of your Matlab installation.</p>
+</li>
+<li><p class="first">In Matlab change to <code class="docutils literal"><span class="pre">rtairos</span></code> directory and run <code class="docutils literal"><span class="pre">setup</span></code></p>
+<div class="highlight-python"><div class="highlight"><pre>&gt;&gt; matlabroot
+ans =
+/opt/matlab
+&gt;&gt; cd /opt/matlab/rtw/c/rtairos
+&gt;&gt; setup
+</pre></div>
+</div>
+<p>This compiles all S-Functions of RTAI-ROS and adds the devices subdirectory to the search path.
+Make sure you have write permissions on <code class="docutils literal"><span class="pre">rtairos</span></code>.</p>
+</li>
+<li><p class="first">In <code class="docutils literal"><span class="pre">rtairos.tmf</span></code> change the variables <code class="docutils literal"><span class="pre">MATLAB_ROOT</span></code>, <code class="docutils literal"><span class="pre">LINUX_HOME</span></code>, <code class="docutils literal"><span class="pre">RTAIDIR</span></code>, <code class="docutils literal"><span class="pre">COMEDI_HOME</span></code>, and <code class="docutils literal"><span class="pre">ROS_HOME</span></code> to your needs.
+Be sure to set it for the target system where you want to compile your code.</p>
+<ul class="simple">
+<li>During code generation the variable <code class="docutils literal"><span class="pre">|&gt;MATLAB_ROOT&lt;|</span></code> will be expanded by the TLC to the Matlab installation directory.
+On a linux system this is normally <code class="docutils literal"><span class="pre">/opt/matlab</span></code> (sometimes <code class="docutils literal"><span class="pre">/usr/local/matlab</span></code>).</li>
+<li>You can leave the variables <code class="docutils literal"><span class="pre">LINUX_HOME</span></code>, <code class="docutils literal"><span class="pre">RTAIDIR</span></code>, and <code class="docutils literal"><span class="pre">COMEDI_HOME</span></code> unchanged if <code class="docutils literal"><span class="pre">rtai-config</span></code> is in the search path and can be found during build.</li>
+</ul>
+<p>If you use Windows for code generation remove also the following lines:</p>
+<div class="highlight-python"><div class="highlight"><pre>|&gt;START_EXPAND_RULES&lt;|%.o : |&gt;EXPAND_DIR_NAME&lt;|/%.c
+    gcc -c $(CFLAGS) $&lt;
+
+|&gt;END_EXPAND_RULES&lt;|
+</pre></div>
+</div>
+</li>
+</ol>
+<div class="section" id="uninstallation">
+<h3>Uninstallation<a class="headerlink" href="#uninstallation" title="Permalink to this headline">¶</a></h3>
+<p>To uninstall just remove the <code class="docutils literal"><span class="pre">rtairos</span></code> directory. Matlab normally removes invalid directories from search path.
+To remove the <code class="docutils literal"><span class="pre">rtairos</span></code> directory manually from search path, run</p>
+<div class="highlight-python"><div class="highlight"><pre>&gt;&gt; rmpath $(MATLABROOT)/rtw/c/rtairos
+</pre></div>
+</div>
+</div>
+</div>
+<span id="document-usage"></span><div class="section" id="usage">
+<span id="id1"></span><h2>Usage<a class="headerlink" href="#usage" title="Permalink to this headline">¶</a></h2>
+<p>The usage of RTAI-ROS will be explained using the example  <code class="docutils literal"><span class="pre">examples/rosdemo.mdl</span></code>.</p>
+<div class="figure align-center">
+<a class="reference internal image-reference" href="_images/rosdemo.png"><img alt="_images/rosdemo.png" src="_images/rosdemo.png" style="width: 800px;" /></a>
+</div>
+<div class="section" id="generate-code">
+<h3>Generate code<a class="headerlink" href="#generate-code" title="Permalink to this headline">¶</a></h3>
+<ol class="arabic simple">
+<li>Open your Simulink model, in our case <code class="docutils literal"><span class="pre">rosdemo.mdl</span></code>.</li>
+<li>Open the configuration dialog <strong>Simulation → Configuration Parameters → Real-Time Workshop</strong> and select <code class="docutils literal"><span class="pre">rtairos.tlc</span></code> as <em>System target file</em>. If you don&#8217;t want to compile the code, select also <em>Generate code only</em>.</li>
+<li>Click on <em>Generate code</em>. This creates the subdirectory <code class="docutils literal"><span class="pre">rosdemo_rtairos</span></code> in your current directory containig the generated source code.</li>
+<li>Copy the directory <code class="docutils literal"><span class="pre">rosdemo_rtairos</span></code> to your RTAI Linux system.</li>
+</ol>
+<div class="figure align-center">
+<a class="reference internal image-reference" href="_images/rtw-config.png"><img alt="_images/rtw-config.png" src="_images/rtw-config.png" style="width: 600px;" /></a>
+</div>
+</div>
+<div class="section" id="build">
+<h3>Build<a class="headerlink" href="#build" title="Permalink to this headline">¶</a></h3>
+<ol class="arabic">
+<li><p class="first">Change to the source directory <code class="docutils literal"><span class="pre">rosdemo_rtairos</span></code>. If you generated your code on a Windows system create a symbolic link to the make file:</p>
+<div class="highlight-python"><div class="highlight"><pre>ln -s rosdemo.mk Makefile
+</pre></div>
+</div>
+</li>
+<li><p class="first">Build the program:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">make</span>
+</pre></div>
+</div>
+</li>
+</ol>
+</div>
+<div class="section" id="run">
+<h3>Run<a class="headerlink" href="#run" title="Permalink to this headline">¶</a></h3>
+<ol class="arabic">
+<li><p class="first">Start the ROS master:</p>
+<div class="highlight-python"><div class="highlight"><pre>roscore &amp;
+</pre></div>
+</div>
+</li>
+<li><p class="first">Set the <code class="docutils literal"><span class="pre">ROS_MASTER_URI</span></code> environment variable:</p>
+<div class="highlight-python"><div class="highlight"><pre>export ROS_MASTER_URI=http://localhost:11311
+</pre></div>
+</div>
+</li>
+<li><p class="first">Start the demo:</p>
+<div class="highlight-python"><div class="highlight"><pre>../rosdemo
+</pre></div>
+</div>
+</li>
+</ol>
+</div>
+<div class="section" id="connect-with-ros">
+<h3>Connect with ROS<a class="headerlink" href="#connect-with-ros" title="Permalink to this headline">¶</a></h3>
+<p>Now you can connect to the running program using ROS, e.g:</p>
+<ul>
+<li><p class="first">Show all registered topics and services:</p>
+<div class="highlight-python"><div class="highlight"><pre>rosnode info /rosdemo
+</pre></div>
+</div>
+</li>
+<li><p class="first">Read from topic:</p>
+<div class="highlight-python"><div class="highlight"><pre>rostopic echo /demo/uy
+</pre></div>
+</div>
+</li>
+<li><p class="first">Write to topic:</p>
+<div class="highlight-python"><div class="highlight"><pre>rostopic pub -1 /demo/v std_msgs/Float64 2
+</pre></div>
+</div>
+</li>
+<li><p class="first">Read all parameters of the model from parameter server:</p>
+<div class="highlight-python"><div class="highlight"><pre>rosparam get /rosdemo
+</pre></div>
+</div>
+<p>This will give you the following output:</p>
+<div class="highlight-python"><div class="highlight"><pre>Config: {P1: 10.0, P3: 1.0, P4: 1.0, P5: 3.0}
+Constant: {Value: 1.0}
+Environment_Controller:
+Switch_Control: {Value: 0.0}
+Environment_Controller1:
+Switch_Control: {Value: 0.0}
+Integrator: {InitialCondition: 0.0}
+Log: {P1: 2.0, P3: 0.0}
+Publisher: {P1: 4.0, P3: -1.0}
+Publisher1: {P1: 1.0, P3: -1.0}
+Publisher2: {P1: 5.0, P3: -1.0}
+Publisher3: {P1: 1.0, P3: -1.0}
+Publisher4: {P1: 1.0, P3: -1.0}
+Publisher5: {P1: 1.0, P3: -1.0}
+Publisher6: {P1: 2.0, P3: -1.0}
+Pulse_Generator: {Amplitude: 1.0, Period: 10000.0, PulseWidth: 5000.0}
+Repeating_Sequence:
+Look_Up_Table1:
+InputValues: [0.0, 2.0, 4.0, 6.0]
+Table: [0.0, 2.0, 2.0, 0.0]
+Service: {P2: -1.0}
+Service1: {P2: -1.0}
+Subscriber: {P1: 1.0, P3: 1.0, P4: -1.0, P5: 0.0}
+Subscriber1: {P1: 1.0, P3: 0.0, P4: -1.0, P5: 0.0}
+</pre></div>
+</div>
+</li>
+<li><p class="first">Change the parameters of the square wave signal:</p>
+<div class="highlight-python"><div class="highlight"><pre>rosparam set /rosdemo/Pulse_Generator &#39;{Amplitude: 0.5, Period: 5000, PulseWidth: 2500}&#39;
+rosservice call /rosdemo/set_parameters
+</pre></div>
+</div>
+</li>
+<li><p class="first">Set source to trapezoidal signal:</p>
+<div class="highlight-python"><div class="highlight"><pre>rosservice call /demo/trapezoid
+</pre></div>
+</div>
+</li>
+</ul>
+<p>Instead of using command line tools you can use <a class="reference external" href="http://wiki.ros.org/rqt/">rqt</a>, check <code class="docutils literal"><span class="pre">examples/rosdemo.perspective</span></code> for a demo perspective.</p>
+<div class="figure align-center">
+<a class="reference internal image-reference" href="_images/rosdemo-rqt.png"><img alt="_images/rosdemo-rqt.png" src="_images/rosdemo-rqt.png" style="width: 600px;" /></a>
+</div>
+</div>
+<div class="section" id="special-services">
+<h3>Special services<a class="headerlink" href="#special-services" title="Permalink to this headline">¶</a></h3>
+<p>The ROS node provides up to three special services:</p>
+<ul class="simple">
+<li><code class="docutils literal"><span class="pre">/rosdemo/refresh_parameters</span></code> to write model parameters to the parameter server. This can be avoided via config block.</li>
+<li><code class="docutils literal"><span class="pre">/rosdemo/set_parameters</span></code> to write modified parameters on the parameter server to the model. This can be set via config block.</li>
+<li><code class="docutils literal"><span class="pre">/rosdemo/start</span></code> to start the real-time process if the program was started with <code class="docutils literal"><span class="pre">-w</span></code>.</li>
+</ul>
+</div>
+<div class="section" id="parameters">
+<h3>Parameters<a class="headerlink" href="#parameters" title="Permalink to this headline">¶</a></h3>
+<p>There are various arguments for the program which can be shown by</p>
+<div class="highlight-python"><div class="highlight"><pre>../rosdemo -h
+</pre></div>
+</div>
+<p>The generated program supports also <a class="reference external" href="http://wiki.ros.org/Remapping%20Arguments">parameter mapping</a></p>
+<div class="highlight-python"><div class="highlight"><pre>../rosdemo name:=new_name
+</pre></div>
+</div>
+<p>To run multiple programs on the same machine it is required to set the name of the host interface task (default <code class="docutils literal"><span class="pre">IFTASK</span></code>) with</p>
+<div class="highlight-python"><div class="highlight"><pre>../rosdemo -n TASK2
+</pre></div>
+</div>
+<p>to avoid conflicts.
+The number of blocks useable on a machine is restricted by the number of registrable RTAI objects set during the installation of RTAI.
+You can read this number from <code class="docutils literal"><span class="pre">MAX_SLOTS</span></code> in <code class="docutils literal"><span class="pre">/proc/rtai/name</span></code>.
+For the moment every block requires two RTAI objects, one for the shared memory and one for the semaphore.</p>
+</div>
+</div>
+<span id="document-blocks"></span><div class="section" id="blocks">
+<h2>Blocks<a class="headerlink" href="#blocks" title="Permalink to this headline">¶</a></h2>
+<div class="figure align-right">
+<a class="reference internal image-reference" href="_images/rtairos-blocks.png"><img alt="_images/rtairos-blocks.png" src="_images/rtairos-blocks.png" style="width: 600px;" /></a>
+</div>
+<p>Following blocks are available to connect with ROS.</p>
+<ul>
+<li><p class="first"><strong>Publisher/Subscriber</strong> to read/write <a class="reference external" href="http://wiki.ros.org/Topics">topics</a>.</p>
+<p>Available message types:</p>
+<ul class="simple">
+<li>std_msg/Bool</li>
+<li>std_msg/Int32</li>
+<li>std_msg/Float64</li>
+<li>std_msg/Float64MultiArray</li>
+<li>std_msg/Time</li>
+<li>geometry_msgs/Point</li>
+<li>geometry_msgs/PointStamped</li>
+<li>geometry_msgs/Twist</li>
+<li>geometry_msgs/TwistStamped</li>
+<li>geometry_msgs/Pose2D</li>
+</ul>
+</li>
+<li><p class="first"><strong>Service</strong> to make a <a class="reference external" href="http://wiki.ros.org/Services">service call</a> with request and reply message of type <code class="docutils literal"><span class="pre">std_msg/Empty</span></code>.</p>
+</li>
+<li><p class="first"><strong>Transformation publisher</strong> to publish <a class="reference external" href="http://wiki.ros.org/tf">tf messages</a>.</p>
+</li>
+<li><p class="first"><strong>Joint state publisher</strong> to publish <a class="reference external" href="http://wiki.ros.org/joint_state_publisher">joints</a>.</p>
+</li>
+<li><p class="first"><strong>Joystick subscriber</strong> to read from <a class="reference external" href="http://wiki.ros.org/joy">joy node</a>.</p>
+</li>
+<li><p class="first"><strong>Config</strong> to configure following parameters of the ROS node:</p>
+<ul class="simple">
+<li>Rate (default: 100 ms)</li>
+<li>Namespace (default: none)</li>
+<li>Publisher queue size (default: 10)</li>
+<li>Subscriber queue size (default: 10)</li>
+<li>If parameters should be exposed to parameter server and can be changed with <code class="docutils literal"><span class="pre">/NODE/set_parameters</span></code> (default: read only).</li>
+</ul>
+</li>
+<li><p class="first"><strong>Logger</strong> to send a log message triggert by a raising edge.</p>
+</li>
+</ul>
+<p>There are additional blocks to read a Sensoray s526 counter and write to a RTAI-FIFO.
+All other blocks are taken from <a class="reference external" href="https://www.rtai.org/?About_RTAI-Lab">RTAI-Lab</a>.</p>
+</div>
+<span id="document-advanced"></span><div class="section" id="advanced-usage">
+<h2>Advanced usage<a class="headerlink" href="#advanced-usage" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="extend-own-s-function">
+<h3>Extend own S-Function<a class="headerlink" href="#extend-own-s-function" title="Permalink to this headline">¶</a></h3>
+<p>The following code shows the base structure to add log functionality to your own S-Function:</p>
+<div class="highlight-python"><div class="highlight"><pre>#ifndef MATLAB_MEX_FILE
+#include &lt;ros_block.h&gt;
+#endif
+
+static void mdlInitializeSizes(SimStruct *S) {
+    ssSetNumIWork(S, 1);
+    ssSetNumPWork(S, 2);
+}
+
+#define MDL_START
+static void mdlStart(SimStruct *S) {
+    #ifndef MATLAB_MEX_FILE
+    rosBlockInitResult_t block = registerRosBlock(S, &quot;rosout&quot;, LOGGER, 0);
+    block.shm-&gt;msg.level = LOG_ERROR;
+    ssSetIWorkValue(S, 0, block.num);
+    ssSetPWorkValue(S, 0, (void *)block.shm);
+    ssSetPWorkValue(S, 1, (void *)block.sem);
+    #endif
+}
+
+static void mdlOutputs(SimStruct *S, int_T tid) {
+    #ifndef MATLAB_MEX_FILE
+    rosShmData_t *shm = (rosShmData_t *)ssGetPWorkValue(S, 0);
+    SEM *sem = (SEM *)ssGetPWorkValue(S, 1);
+    if (error) {
+        if (rt_sem_wait_if(sem) != 0) {
+            memcpy(shm-&gt;msg.text, &quot;Error occurred&quot;, MAX_LOG_MSG_SIZE);
+            shm-&gt;msg.state = NEW_VALUE;
+            rt_sem_signal(sem);
+        }
+    }
+    #endif
+}
+
+static void mdlTerminate(SimStruct *S) {
+    #ifndef MATLAB_MEX_FILE
+    cleanRosBlock(ssGetIWorkValue(S, 0));
+    #endif
+}
+</pre></div>
+</div>
+</div>
+<div class="section" id="add-own-message-types">
+<h3>Add own message types<a class="headerlink" href="#add-own-message-types" title="Permalink to this headline">¶</a></h3>
+<p>For the moment this requires to change the source code.
+The necessary steps are shown using <code class="docutils literal"><span class="pre">geometry_msgs/Vector3</span></code> as an example.</p>
+<ol class="arabic">
+<li><p class="first">In <code class="docutils literal"><span class="pre">include/ros_defines.h</span></code> add a new preprocessor variable, e.g.:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c">#define PUBLISHER_VECTOR3 42    // or</span>
+<span class="c">#define SUBSCRIBER_VECTOR3 42</span>
+</pre></div>
+</div>
+</li>
+<li><p class="first">Include the header file in <code class="docutils literal"><span class="pre">rtmain.cpp</span></code>:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c">#undef RT</span>
+<span class="c">#include &lt;geometry_msgs/Vector3.h&gt;</span>
+<span class="c">#define RT</span>
+</pre></div>
+</div>
+</li>
+<li><p class="first">For a publisher add a new case to class <code class="docutils literal"><span class="pre">RosPublisher</span></code>:</p>
+<div class="highlight-python"><div class="highlight"><pre>void publish() {
+    ...
+    } else if (subType == PUBLISHER_VECTOR3) {
+        geometry_msgs::Vector3 msg;
+        msg.x = shmData.data[0];
+        msg.y = shmData.data[1];
+        msg.z = shmData.data[2];
+        pub.publish(msg);
+    }
+}
+</pre></div>
+</div>
+<p>For a subscriber add a new callback function to <code class="docutils literal"><span class="pre">RosSubscriber</span></code>:</p>
+<div class="highlight-python"><div class="highlight"><pre>void callback(const geometry_msgs::Vector3 msg) {
+    if (!this-&gt;sem_wait()) return;
+    shm-&gt;data[0] = msg.x;
+    shm-&gt;data[1] = msg.y;
+    shm-&gt;data[2] = msg.z;
+    this-&gt;sem_signal();
+}
+</pre></div>
+</div>
+</li>
+<li><p class="first">In function <code class="docutils literal"><span class="pre">rosInterface()</span></code> add an initialization block:</p>
+<div class="highlight-python"><div class="highlight"><pre>// Subscribers
+} else if (rosBlockConfigs[i].type == SUBSCRIBER) {
+    ...
+    } else if (subscriber-&gt;subType == SUBSCRIBER_VECTOR3) {
+        subscriber-&gt;sub = nh.subscribe&lt;geometry_msgs::Vector3&gt;(subscriber-&gt;name,
+            rosConfig.subStackSize, &amp;RosSubscriber::callback, subscriber);
+
+// Publishers
+} else if (rosBlockConfigs[i].type == PUBLISHER) {
+    ...
+    } else if (publisher-&gt;subType == PUBLISHER_VECTOR3) {
+        publisher-&gt;pub = nh.advertise&lt;geometry_msgs::Vector3&gt;(publisher-&gt;name,
+            rosConfig.pubStackSize);
+</pre></div>
+</div>
+</li>
+</ol>
+</div>
+</div>
+<span id="document-files"></span><div class="section" id="files">
+<h2>Files<a class="headerlink" href="#files" title="Permalink to this headline">¶</a></h2>
+<ul>
+<li><p class="first"><code class="docutils literal"><span class="pre">ros_block.c</span></code>: Helper functions used by ROS blocks</p>
+</li>
+<li><p class="first"><code class="docutils literal"><span class="pre">rtairos_genfiles.tlc</span></code>: Additional script for the Target Language Compiler; creates the symbolic link on unix systems.</p>
+</li>
+<li><p class="first"><code class="docutils literal"><span class="pre">rtairos.tlc</span></code>: Main script for the Target Language Compiler</p>
+</li>
+<li><p class="first"><code class="docutils literal"><span class="pre">rtairos.tmf</span></code>: Makefile template</p>
+</li>
+<li><p class="first"><code class="docutils literal"><span class="pre">rtmain.cpp</span></code>: Main program</p>
+</li>
+<li><p class="first"><code class="docutils literal"><span class="pre">setup.m</span></code>: Matlab installation script</p>
+</li>
+<li><dl class="first docutils">
+<dt><code class="docutils literal"><span class="pre">devices/</span></code></dt>
+<dd><ul class="first last">
+<li><p class="first"><code class="docutils literal"><span class="pre">rtairos.mdl</span></code>: Simulink library</p>
+</li>
+<li><dl class="first docutils">
+<dt>S-Functions for Comedi:</dt>
+<dd><ul class="first last simple">
+<li><code class="docutils literal"><span class="pre">sfun_comedi_counter_read.c</span></code>: Read counter</li>
+<li><code class="docutils literal"><span class="pre">sfun_comedi_data_read.c</span></code>: Read analog input</li>
+<li><code class="docutils literal"><span class="pre">sfun_comedi_data_write.c</span></code>: Write analog output</li>
+<li><code class="docutils literal"><span class="pre">sfun_comedi_dio_read.c</span></code>: Read digital input</li>
+<li><code class="docutils literal"><span class="pre">sfun_comedi_dio_write.c</span></code>: Write digital output</li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><p class="first"><code class="docutils literal"><span class="pre">sfun_rtai_fifo.c</span></code>: S-Function to write FIFOs</p>
+</li>
+<li><dl class="first docutils">
+<dt>S-Functions for ROS:</dt>
+<dd><ul class="first last simple">
+<li><code class="docutils literal"><span class="pre">sfun_ros_config.c</span></code>: Config block</li>
+<li><code class="docutils literal"><span class="pre">sfun_ros_joint_state.c</span></code>: Joint state publisher</li>
+<li><code class="docutils literal"><span class="pre">sfun_ros_joy.c</span></code>: Joystick subscriber</li>
+<li><code class="docutils literal"><span class="pre">sfun_ros_log.c</span></code>: Logger</li>
+<li><code class="docutils literal"><span class="pre">sfun_ros_publisher.c</span></code>: Publisher</li>
+<li><code class="docutils literal"><span class="pre">sfun_ros_service.c</span></code>: Service</li>
+<li><code class="docutils literal"><span class="pre">sfun_ros_subscriber.c</span></code>: Subscriber</li>
+<li><code class="docutils literal"><span class="pre">sfun_ros_tf.c</span></code>: Transformation publisher</li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>S-Functions for RTAI-Lab (see RTAI-Lab documentation):</dt>
+<dd><ul class="first last simple">
+<li><code class="docutils literal"><span class="pre">sfun_rtai_automatic_log.c</span></code></li>
+<li><code class="docutils literal"><span class="pre">sfun_rtai_led.c</span></code></li>
+<li><code class="docutils literal"><span class="pre">sfun_rtai_log.c</span></code></li>
+<li><code class="docutils literal"><span class="pre">sfun_rtai_meter.c</span></code></li>
+<li><code class="docutils literal"><span class="pre">sfun_rtai_scope.c</span></code></li>
+<li><code class="docutils literal"><span class="pre">sfun_rtai_synchronoscope.c</span></code></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><p class="first"><code class="docutils literal"><span class="pre">slblocks.m</span></code>: Configuration of the simulink library</p>
+</li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><code class="docutils literal"><span class="pre">examples/</span></code></dt>
+<dd><ul class="first last simple">
+<li><code class="docutils literal"><span class="pre">rtaitest.mdl</span></code>: RTAI-Lab example</li>
+<li><code class="docutils literal"><span class="pre">rosdemo.mdl</span></code>: Example model; see <a class="reference internal" href="index.html#usage"><span>Usage</span></a></li>
+<li><code class="docutils literal"><span class="pre">rosdemo.perspective</span></code>: A example perspective for rqt.</li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><code class="docutils literal"><span class="pre">include/</span></code></dt>
+<dd><ul class="first last simple">
+<li><code class="docutils literal"><span class="pre">ros_block.h</span></code>: Helper functions used by ROS blocks</li>
+<li><code class="docutils literal"><span class="pre">ros_defines.h</span></code>: Defines and structs used by the main program and blocks.</li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html#document-index">Table Of Contents</a></h3>
+  <ul>
+<li class="toctree-l1"><a class="reference internal" href="index.html#document-installation">Installation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="index.html#uninstallation">Uninstallation</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="index.html#document-usage">Usage</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="index.html#generate-code">Generate code</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#build">Build</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#run">Run</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#connect-with-ros">Connect with ROS</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#special-services">Special services</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#parameters">Parameters</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="index.html#document-blocks">Blocks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="index.html#document-advanced">Advanced usage</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="index.html#extend-own-s-function">Extend own S-Function</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#add-own-message-types">Add own message types</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="index.html#document-files">Files</a></li>
+</ul>
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="nav-item nav-item-0"><a href="index.html#document-index">RTAI-ROS 1.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2015, Roland Hopferwieser.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
+    </div>
+  </body>
+</html>
