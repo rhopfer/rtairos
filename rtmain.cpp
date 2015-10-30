@@ -178,7 +178,7 @@ static RT_TASK **rt_SubRateTasks;
 static pthread_t rosThread;
 static RT_TASK *rt_rosTask;
 
-const char *HostInterfaceTaskName     = "HIT";
+const char *HostInterfaceTaskName     = "IFTASK";
 const char *TargetScopeMbxID          = "RTS";
 const char *TargetALogMbxID           = "RAL";
 const char *TargetLogMbxID            = "RTL";
@@ -206,6 +206,7 @@ static RTIME rt_BaseRateTick;
 static volatile int endSubRate    = 0;
 #endif
 static int EnableHostInterface = 0;
+static int rosInitOptions = ros::init_options::NoSigintHandler;
 
 static volatile int endex;
 static volatile bool endRos = 0;
@@ -1867,11 +1868,11 @@ static struct poptOption long_options[] = {
 	{ "synchid", 0, POPT_ARG_STRING, &TargetSynchronoscopeMbxID, OPT_SYNCHID, "Set the synchronoscope mailboxes identifier", TargetSynchronoscopeMbxID },
 	{ "cpumap", 'c', POPT_ARG_INT, (int *)&CpuMap, 'c', "(1 << cpunum) on which the RT-model runs", STR(DEFAULT_CPUMAP) },
 	{ "external", 'e', POPT_ARG_NONE, (int *)&ExternalTimer, 'e', "RT-model timed by an external resume", 0 },
-	{ "oneshot", 'o', POPT_ARG_NONE, (int *)&OneShot, 'o', "the hard timer will run in oneshot mode", 0 },
-	{ "stack", 'm', POPT_ARG_INT, (int *)&StackInc, 'm', "set a guaranteed stack size extension", STR(DEFAULT_STACKING) },
-	{ "rosnode", 'N', POPT_ARG_STRING, &rosNode, 'N', "set the name of the ros node", STR(MODEL) },
-//	{ "random", 0, POPT_ARG_NONE, &randomRosName, OPT_RANDOM, "adds a random number to the end of your node's name, to make it unique", 0 },
-//	{ "norosout", 0, POPT_ARG_NONE, &norosout, OPT_NOROSOUT, "don't broadcast rosconsole output to the /rosout topic", 0 },
+	{ "oneshot", 'o', POPT_ARG_NONE, (int *)&OneShot, 'o', "The hard timer will run in oneshot mode", 0 },
+	{ "stack", 'm', POPT_ARG_INT, (int *)&StackInc, 'm', "Set a guaranteed stack size extension", STR(DEFAULT_STACKING) },
+	{ "rosnode", 'N', POPT_ARG_STRING, &rosNode, 'N', "Set the name of the ros node", STR(MODEL) },
+	{ "random", 0, POPT_ARG_NONE, 0, OPT_RANDOM, "Adds a random number to the end of your node's name, to make it unique", 0 },
+	{ "norosout", 0, POPT_ARG_NONE, 0, OPT_NOROSOUT, "Don't broadcast rosconsole output to the /rosout topic", 0 },
 //	{ "namespace", 'n', POPT_ARG_STRING, &rosNamespace, 'n', "set a namespace", rosNamespace },
 	POPT_AUTOHELP
 	{ 0, 0, 0, 0, 0, 0 }
@@ -1914,6 +1915,12 @@ int parse_arguments(int *argc_p, const char ***argv_p) {
             case OPT_VERSION:
                 print_version();
                 break;
+			case OPT_NOROSOUT:
+				rosInitOptions = rosInitOptions | ros::init_options::NoRosout;
+				break;
+			case OPT_RANDOM:
+				rosInitOptions = rosInitOptions | ros::init_options::AnonymousName;
+				break;
         }
     }
 
@@ -1933,7 +1940,7 @@ int main(int argc, char **argv) {
 
 	parse_arguments(&argc, (const char ***) &argv);
 
-	ros::init(argc, argv, std::string(rosNode), ros::init_options::NoSigintHandler);
+	ros::init(argc, argv, std::string(rosNode), rosInitOptions);
 
 	if (Verbose) {
 		printf("\nTarget settings\n");
