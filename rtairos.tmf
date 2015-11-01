@@ -75,7 +75,7 @@ LDFLAGS = -L$(ROS_HOME)/lib
 
 #-------------------------- Additional Libraries ------------------------------
 
-SYSLIBS = $(EXT_LIB) -lpthread -lm -lboost_regex
+SYSLIBS = $(EXT_LIB) -lpthread -lm -lboost_regex -lpopt
 ROSLIBS = -lroscpp -lrostime -lrosconsole -lroscpp_serialization -ltf
 
 LIBS = $(RTAIDIR)/lib/liblxrt.a
