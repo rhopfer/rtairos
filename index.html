@@ -41,7 +41,20 @@
   <div class="section" id="rtai-ros-documentation">
 <h1>RTAI-ROS documentation<a class="headerlink" href="#rtai-ros-documentation" title="Permalink to this headline">¶</a></h1>
 <div class="toctree-wrapper compound">
-<span id="document-installation"></span><div class="section" id="installation">
+<span id="document-installation"></span><div class="section" id="requirements">
+<h2>Requirements<a class="headerlink" href="#requirements" title="Permalink to this headline">¶</a></h2>
+<p>For code generation only <code class="docutils literal"><span class="pre">RTAI-ROS</span></code> is required.
+To compile and run the generated program it requires:</p>
+<ul class="simple">
+<li>RTAI (tested with v4.0)</li>
+<li>ROS (tested with Hydro)</li>
+</ul>
+<p>For the development version (&gt; 1.0):</p>
+<ul class="simple">
+<li>libpopt for command line parsing (on Ubuntu it named <code class="docutils literal"><span class="pre">libpopt-dev</span></code>)</li>
+</ul>
+</div>
+<div class="section" id="installation">
 <h2>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h2>
 <ol class="arabic">
 <li><p class="first">Copy the <code class="docutils literal"><span class="pre">rtairos</span></code> directory to <code class="docutils literal"><span class="pre">$(MATLABROOT)/rtw/c/</span></code>, where <code class="docutils literal"><span class="pre">$(MATLABROOT)</span></code> is the root of your Matlab installation.</p>
@@ -486,7 +499,8 @@ The necessary steps are shown using <code class="docutils literal"><span class="
         <div class="sphinxsidebarwrapper">
   <h3><a href="index.html#document-index">Table Of Contents</a></h3>
   <ul>
-<li class="toctree-l1"><a class="reference internal" href="index.html#document-installation">Installation</a><ul>
+<li class="toctree-l1"><a class="reference internal" href="index.html#document-installation">Requirements</a></li>
+<li class="toctree-l1"><a class="reference internal" href="index.html#installation">Installation</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="index.html#uninstallation">Uninstallation</a></li>
 </ul>
 </li>
