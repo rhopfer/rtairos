@@ -1,3 +1,17 @@
+Requirements
+============
+
+For code generation only ``RTAI-ROS`` is required.
+To compile and run the generated program it requires:
+
+* RTAI (tested with v4.0)
+* ROS (tested with Hydro)
+
+For the development version (> 1.0):
+
+* libpopt for command line parsing (on Ubuntu it named ``libpopt-dev``)
+
+
 Installation
 ============
 
