@@ -92,8 +92,8 @@ LIBS += $(S_FUNCTIONS_LIB) $(INSTRUMENT_LIBS)
 #----------------------------- Source Files ------------------------------------
 
 REQ_SRCS  = $(MODEL).c $(MODULES) rt_sim.c rt_nonfinite.c $(EXT_SRC)
-USER_SRCS = rtmain.cpp
-USER_OBJS = rtmain.o ros_block.o
+USER_SRCS = rtmain.cpp RosInterface.cpp
+USER_OBJS = rtmain.o ros_block.o RosInterface.o
 LOCAL_USER_OBJS = $(notdir $(USER_OBJS))
 
 SRCS      = $(REQ_SRCS) $(S_FUNCTIONS) $(SOLVER)
@@ -118,6 +118,9 @@ rtmain.o : $(RTAI_RTW)/rtmain.cpp $(MODEL).c
 	$(CC) -c $(CFLAGS) $(RT_MAIN_DEFINES) $(RTAI_RTW)/rtmain.cpp
 
 %.o : $(RTAI_RTW)/%.c
+	$(CC) -c $(CFLAGS) $(RT_MAIN_DEFINES) $<
+
+%.o : $(RTAI_RTW)/%.cpp
 	$(CC) -c $(CFLAGS) $(RT_MAIN_DEFINES) $<
 
 sfun_comedi%.o : $(RTAI_RTW)/devices/sfun_comedi%.c
