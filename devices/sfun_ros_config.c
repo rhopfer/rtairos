@@ -11,6 +11,7 @@
 #include <ros_defines.h>
 
 extern rosConfig_t rosConfig;
+extern char[MAX_DESC_SIZE] progDesc;
 
 #endif
 
@@ -18,7 +19,7 @@ extern rosConfig_t rosConfig;
 #define PARAM_SIZE(element) mxGetNumberOfElements(ssGetSFcnParam(S,element))
 
 static void mdlInitializeSizes(SimStruct *S) {
-	ssSetNumSFcnParams(S,5);
+	ssSetNumSFcnParams(S,6);
 	if (ssGetNumSFcnParams(S) != ssGetSFcnParamsCount(S)) {
 		return; /* Parameter mismatch will be reported by Simulink */
 	}
@@ -40,14 +41,25 @@ static void mdlInitializeSizes(SimStruct *S) {
 #define MDL_START
 static void mdlStart(SimStruct *S) {
 #ifndef MATLAB_MEX_FILE
-	unsigned int strlen = sizeof(char_T)*(PARAM_SIZE(1)+1);
+	unsigned int strlen;
+	char_T *str;
 	int_T rate = (int_T)PARAM(0)[0];
-	char_T *str = (char_T *)malloc(strlen);
+
+	// Namespace
+	strlen = sizeof(char_T)*(PARAM_SIZE(1)+1);
+	str = (char_T *)malloc(strlen);
 	mxGetString(ssGetSFcnParam(S,1), str, strlen);
+	snprintf(rosConfig.ns, MAX_NAMES_SIZE, str);
+
+	// Description
+	strlen = sizeof(char_T)*(PARAM_SIZE(5)+1);
+	str = (char_T *)realloc(str, strlen);
+	mxGetString(ssGetSFcnParam(S,1), str, strlen);
+	snprintf(progDesc, MAX_DESC_SIZE, str);
+
 	if (rate > 0) {
 		rosConfig.rate = rate;
 	}
-	memcpy(rosConfig.ns, str, MAX_NAMES_SIZE);
 	rosConfig.pubStackSize = PARAM(2)[0];
 	rosConfig.subStackSize = PARAM(3)[0];
 	rosConfig.exposeParams = PARAM(4)[0] - 1;

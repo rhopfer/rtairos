@@ -211,6 +211,7 @@ SimStruct *rtaiSynchronoscope[MAX_RTAI_SYNCHS];
 
 rosConfig_t rosConfig = {ROS_SAMPLETIME, "", true, PUBLISHER_STACK_SIZE, SUBSCRIBER_STACK_SIZE};
 rosBlockConfig_t rosBlockConfigs[MAX_ROS_BLOCKS];
+char progDesc[MAX_DESC_SIZE];
 unsigned int numRosBlocks = 0;
 const char *rosNode = STR(MODEL);
 
@@ -1107,6 +1108,7 @@ static struct poptOption long_options[] = {
 };
 
 void print_usage(poptContext optCon, int exitcode, const char *error, const char *addl) {
+	fprintf(stdout, "%s", progDesc);
     poptPrintUsage(optCon, stderr, 0);
     if (error) fprintf(stderr, "%s: %s\n", error, addl);
     poptFreeContext(optCon);

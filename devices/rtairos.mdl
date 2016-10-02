@@ -35,9 +35,9 @@ Library {
   ModifiedByFormat	  "%<Auto>"
   LastModifiedBy	  "rho"
   ModifiedDateFormat	  "%<Auto>"
-  LastModifiedDate	  "Thu Oct 22 20:07:08 2015"
+  LastModifiedDate	  "Sun Oct  2 18:31:04 2016"
   RTWModifiedTimeStamp	  0
-  ModelVersionFormat	  "1.%<AutoIncrement:52>"
+  ModelVersionFormat	  "1.%<AutoIncrement:54>"
   ConfigurationManager	  "None"
   SimulationMode	  "normal"
   LinearizationMsg	  "none"
@@ -135,7 +135,7 @@ Library {
   }
   System {
     Name		    "rtairos"
-    Location		    [486, 253, 1066, 513]
+    Location		    [484, 495, 1064, 755]
     Open		    on
     ModelBrowserVisibility  off
     ModelBrowserWidth	    200
@@ -338,8 +338,8 @@ Library {
       MaskIconUnits	      "autoscale"
       System {
 	Name			"ROS"
-	Location		[20, 309, 468, 742]
-	Open			off
+	Location		[486, 405, 934, 838]
+	Open			on
 	ModelBrowserVisibility	off
 	ModelBrowserWidth	200
 	ScreenColor		"white"
@@ -357,26 +357,26 @@ Library {
 	  Ports			  []
 	  Position		  [85, 105, 183, 185]
 	  FunctionName		  "sfun_ros_config"
-	  Parameters		  "rate,ns,pub_stack,sub_stack,show_params"
+	  Parameters		  "rate,ns,pub_stack,sub_stack,show_params,desc"
 	  EnableBusSupport	  off
 	  MaskType		  "ROS Config"
-	  MaskPromptString	  "Rate (Hz):|Namespace:|Publisher queue size:|Subscriber queue size:|Expose parameters:"
-	  MaskStyleString	  "edit,edit,edit,edit,popup(No|Read Only|Writeable)"
-	  MaskTunableValueString  "off,off,off,off,off"
-	  MaskCallbackString	  "||||"
-	  MaskEnableString	  "on,on,on,on,on"
-	  MaskVisibilityString	  "on,on,on,on,on"
-	  MaskToolTipString	  "on,on,on,on,on"
-	  MaskVarAliasString	  ",,,,"
-	  MaskVariables		  "rate=@1;ns=&2;pub_stack=@3;sub_stack=@4;show_params=@5;"
+	  MaskPromptString	  "Rate (Hz):|Namespace:|Publisher queue size:|Subscriber queue size:|Expose parameters:|Description:"
+	  MaskStyleString	  "edit,edit,edit,edit,popup(No|Read Only|Writeable),edit"
+	  MaskTunableValueString  "off,off,off,off,off,off"
+	  MaskCallbackString	  "|||||"
+	  MaskEnableString	  "on,on,on,on,on,on"
+	  MaskVisibilityString	  "on,on,on,on,on,on"
+	  MaskToolTipString	  "on,on,on,on,on,on"
+	  MaskVarAliasString	  ",,,,,"
+	  MaskVariables		  "rate=@1;ns=&2;pub_stack=@3;sub_stack=@4;show_params=@5;desc=&6;"
 	  MaskInitialization	  "str = ['ns: ', get_param(gcb,'ns'), '\\n'];\nstr = [str, 'rate: ', get_param(gcb,'rate'), '\\n'];\nstr = [str, 'PUB queue: ', get_param(gcb,'pub_stack'), '\\n'];\nstr = [str, 'SUB queue: ', get_param(gcb,'sub_stack'), '\\n'];\nstr = [str, 'params: ', get_param(gcb,'show_params')];\n"
 	  MaskDisplay		  "disp([str])"
 	  MaskIconFrame		  on
 	  MaskIconOpaque	  on
 	  MaskIconRotate	  "none"
 	  MaskIconUnits		  "autoscale"
-	  MaskValueString	  "100||1|1|No"
-	  MaskTabNameString	  ",,,,"
+	  MaskValueString	  "100||1|1|No|"
+	  MaskTabNameString	  ",,,,,"
 	}
 	Block {
 	  BlockType		  "S-Function"
