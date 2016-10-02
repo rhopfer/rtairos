@@ -66,6 +66,8 @@ extern "C" {
 #include <ros/ros.h>
 #define RT
 
+#include "rtairos.h"
+
 #define EXPAND_CONCAT(name1,name2)	name1 ## name2
 #define CONCAT(name1,name2)		EXPAND_CONCAT(name1,name2)
 #define RT_MODEL			CONCAT(MODEL,_rtModel)
@@ -1065,6 +1067,7 @@ static void endme(int dummy)
 
 enum {
     OPT_VERSION = 1000,
+    OPT_HELP,
     OPT_RTAILAB,
     OPT_FINALTIME,
     OPT_IFTASK,
@@ -1081,7 +1084,8 @@ enum {
 static struct poptOption long_options[] = {
 	/* longName, shortName, argInfo, argPtr, value, descrip, argDesc */
 	{ "verbose", 'v', POPT_ARG_NONE, (int *)&Verbose, 'v', "Verbose output", 0 },
-	{ "version", 0, POPT_ARG_NONE, 0, OPT_VERSION, "Print version information", 0 },
+	{ "version", 'V', POPT_ARG_NONE, 0, OPT_VERSION, "Print version information", 0 },
+	{ "help", 'h', POPT_ARG_NONE, 0, OPT_HELP, "Print version information", 0 },
 	{ "rtailab", 0, POPT_ARG_NONE, &EnableHostInterface, OPT_RTAILAB, "start the legacy RTAI-Lab host interface task", 0 },
 	{ "wait", 'w', POPT_ARG_NONE, (int *)&WaitToStart, 'w', "Wait to start", 0 },
 	{ "soft", 's', POPT_ARG_NONE, (int *)&UseSoftRT, 's', "Run RT-model in soft instead of hard real-time", 0 },
@@ -1102,7 +1106,7 @@ static struct poptOption long_options[] = {
 	{ "random", 0, POPT_ARG_NONE, 0, OPT_RANDOM, "Adds a random number to the end of your node's name, to make it unique", 0 },
 	{ "norosout", 0, POPT_ARG_NONE, 0, OPT_NOROSOUT, "Don't broadcast rosconsole output to the /rosout topic", 0 },
 //	{ "namespace", 'n', POPT_ARG_STRING, &rosNamespace, 'n', "set a namespace", rosNamespace },
-	POPT_AUTOHELP
+	//- POPT_AUTOHELP
 	{ 0, 0, 0, 0, 0, 0 }
 };
 
@@ -1115,6 +1119,14 @@ void print_usage(poptContext optCon, int exitcode, const char *error, const char
 
 static void print_version() {
     fprintf(stderr, "%s %s\n", RTAIROS_NAME, RTAIROS_VERSION);
+    exit(0);
+}
+
+static void print_help(poptContext optCon) {
+	if (strlen(progDesc) > 0) {
+		fprintf(stderr, "%s\n\n", progDesc);
+	}
+	poptPrintHelp(optCon, stderr, 0);
     exit(0);
 }
 
@@ -1142,6 +1154,9 @@ int parse_arguments(int *argc_p, const char ***argv_p) {
         switch (opt) {
             case OPT_VERSION:
                 print_version();
+                break;
+            case OPT_HELP:
+				print_help(optCon);
                 break;
 			case OPT_NOROSOUT:
 				rosInitOptions = rosInitOptions | ros::init_options::NoRosout;
