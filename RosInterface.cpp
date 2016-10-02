@@ -36,7 +36,7 @@ static char_T* ssGetBlockName(SimStruct *S) {
 	return path;
 }
 
-static std::string cleanupName(std::string str) {
+static std::string sanitizeName(std::string str) {
 	str = boost::regex_replace(str, boost::regex(":"), "/");
 	str = boost::regex_replace(str, boost::regex("^[^a-zA-Z/]"), "X");
 	str = boost::regex_replace(str, boost::regex("[^a-zA-Z0-9/_]"), "_");
@@ -45,7 +45,7 @@ static std::string cleanupName(std::string str) {
 
 static void secureRosConfig() {
 	std::string ns(rosConfig.ns);
-	ns = cleanupName(ns);
+	ns = sanitizeName(ns);
 	memcpy(rosConfig.ns, ns.c_str(), MAX_NAMES_SIZE);
 	if (rosConfig.rate <= 0) {
 		ROS_WARN("Illegal ROS rate %f found. Set to default %f", rosConfig.rate, (double)ROS_SAMPLETIME);
@@ -63,11 +63,11 @@ RosObject::RosObject(rosBlockConfig_t conf, unsigned int num) {
 	}
 	std::string refName(conf.refName);
 
-	this->name = cleanupName(name);
+	this->name = sanitizeName(name);
 	if (this->name != name) {
 		ROS_WARN("Invalid name '%s' of block '%s' replaced by '%s'", conf.name, ssGetBlockName(conf.S), this->name.c_str());
 	}
-	this->refName = cleanupName(refName);
+	this->refName = sanitizeName(refName);
 	this->num = num;
 
 	// Init shared memory
@@ -402,7 +402,7 @@ void RosInterface::publishParams() {
 		std::stringstream ss;
 		ss << rosNode << &rtParameters.blockName[strlen(STR(MODEL))] << '/' << rtParameters.paramName;
 
-		std::string str = cleanupName(ss.str());
+		std::string str = sanitizeName(ss.str());
 
 		uint_T len = rtParameters.nCols*rtParameters.nRows;
 		if (len > MAX_DATA_SIZE) {
@@ -433,7 +433,7 @@ bool RosInterface::setParams(std_srvs::Empty::Request&, std_srvs::Empty::Respons
 		rt_GetParameterInfo(MMI, &rtParameters, i);
 		std::stringstream ss;
 		ss << rosNode << &rtParameters.blockName[strlen(STR(MODEL))] << '/' << rtParameters.paramName;
-		std::string str = cleanupName(ss.str());
+		std::string str = sanitizeName(ss.str());
 
 		if (!nh.hasParam(str.c_str())) {
 			ROS_DEBUG("Parameter /%s unknown; ignored", str.c_str());

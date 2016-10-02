@@ -10,7 +10,6 @@ extern "C" {
 #include <string.h>
 #include <sys/mman.h>
 #include <sys/io.h>
-#include <getopt.h>
 #include <pthread.h>
 #include <math.h>
 #include <semaphore.h>
@@ -139,7 +138,7 @@ class RosInterface {
 
 public:
 
-	void *init(void);
+	void* init(void);
 	bool start(std_srvs::Empty::Request&, std_srvs::Empty::Response&);
 	void publishParams(void);
 	void cleanParams(void);

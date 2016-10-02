@@ -39,7 +39,6 @@ extern "C" {
 #include <string.h>
 #include <sys/mman.h>
 #include <sys/io.h>
-#include <getopt.h>
 #include <pthread.h>
 #include <math.h>
 #include <semaphore.h>
