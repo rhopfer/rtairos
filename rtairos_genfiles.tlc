@@ -5,3 +5,5 @@
 %if %<isunix>
 	%matlab unix("ln -sf %<CompiledModel.Name>.mk %<CompiledModel.Name>_rtairos/Makefile")
 %endif
+
+%include "rtairos_defines.tlc"
