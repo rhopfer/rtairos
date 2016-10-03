@@ -66,6 +66,8 @@ extern "C" {
 #include <ros/ros.h>
 #define RT
 
+#include "rtairos.h"
+
 #define EXPAND_CONCAT(name1,name2)	name1 ## name2
 #define CONCAT(name1,name2)		EXPAND_CONCAT(name1,name2)
 #define RT_MODEL			CONCAT(MODEL,_rtModel)
@@ -1121,6 +1123,9 @@ static void print_version() {
 }
 
 static void print_help(poptContext optCon) {
+	if (strlen(progDesc) > 0) {
+		fprintf(stderr, "%s\n\n", progDesc);
+	}
 	poptPrintHelp(optCon, stderr, 0);
     exit(0);
 }

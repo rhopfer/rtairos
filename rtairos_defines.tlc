@@ -1,0 +1,10 @@
+%assign desc = FEVAL("get_param", "%<modelName>", "Description")
+
+%openfile file = "rtairos.h"
+#ifndef RTAIROS_H_
+#define RTAIROS_H_
+
+const char progDesc[] = "%<desc>";
+
+#endif
+%closefile file
