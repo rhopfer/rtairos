@@ -27,6 +27,66 @@
 /%
   BEGIN_RTW_OPTIONS
 
+  rtwoptions(1).prompt         = 'RTAI-ROS Options';
+  rtwoptions(1).type           = 'Category';
+  rtwoptions(1).enable         = 'on';  
+  rtwoptions(1).default        = 6;   % number of items under this category 
+                                      % excluding this one.
+  rtwoptions(1).popupstrings   = '';
+  rtwoptions(1).tlcvariable    = '';
+  rtwoptions(1).tooltip        = '';
+  rtwoptions(1).callback       = '';
+  rtwoptions(1).makevariable   = '';
+
+  rtwoptions(2).prompt         = 'Node name: ';
+  rtwoptions(2).type           = 'Edit';
+  rtwoptions(2).default        = '';
+  rtwoptions(2).tlcvariable    = 'nodeName';
+  rtwoptions(2).makevariable   = '';
+  rtwoptions(2).tooltip        = ['Node name (model name if empty)'];
+  rtwoptions(2).callback       = '';
+
+  rtwoptions(3).prompt         = 'Namespace:';
+  rtwoptions(3).type           = 'Edit';
+  rtwoptions(3).default        = '';
+  rtwoptions(3).tlcvariable    = 'namespace';
+  rtwoptions(3).makevariable   = '';
+  rtwoptions(3).tooltip        = ['Namespace'];
+  rtwoptions(3).callback       = '';
+
+  rtwoptions(4).prompt         = 'Rate: ';
+  rtwoptions(4).type           = 'Edit';
+  rtwoptions(4).default        = '10';
+  rtwoptions(4).tlcvariable    = 'rosRate';
+  rtwoptions(4).makevariable   = '';
+  rtwoptions(4).tooltip        = ['Rate of the ROS task (Hz)'];
+  rtwoptions(4).callback       = '';
+
+  rtwoptions(5).prompt         = 'Publisher queue size:   ';
+  rtwoptions(5).type           = 'Edit';
+  rtwoptions(5).default        = '1';
+  rtwoptions(5).tlcvariable    = 'pubQueueSize';
+  rtwoptions(5).tooltip        = ['Publisher queue size'];
+  rtwoptions(5).makevariable   = '';
+  rtwoptions(5).callback       = '';
+
+  rtwoptions(6).prompt         = 'Subscriber queue size: ';
+  rtwoptions(6).type           = 'Edit';
+  rtwoptions(6).default        = '1';
+  rtwoptions(6).tlcvariable    = 'subQueueSize';
+  rtwoptions(6).makevariable   = '';
+  rtwoptions(6).tooltip        = ['Subscriber queue size'];
+  rtwoptions(6).callback       = '';
+
+  rtwoptions(7).prompt         = 'Expose parameters:';
+  rtwoptions(7).type           = 'Popup';
+  rtwoptions(7).default        = 'no';
+  rtwoptions(7).popupstrings   = 'no|read-only|writeable';
+  rtwoptions(7).tlcvariable    = 'exposeParams';
+  rtwoptions(7).tooltip        = ['Expose the block parameters to the parameter server'];
+  rtwoptions(7).makevariable   = '';
+  rtwoptions(7).callback       = '';
+
   %----------------------------------------%
   % Configure RTW code generation settings %
   %----------------------------------------%

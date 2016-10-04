@@ -6,10 +6,11 @@ Model {
     NumRootInports	    0
     NumRootOutports	    0
     ParameterArgumentNames  ""
-    ComputedModelVersion    "1.13"
+    ComputedModelVersion    "1.16"
     NumModelReferences	    0
     NumTestPointedSignals   0
   }
+  Description		  "RTAI-ROS demonstration model"
   SavedCharacterEncoding  "UTF-8"
   SaveDefaultBlockParams  on
   SampleTimeColors	  off
@@ -45,9 +46,9 @@ Model {
   ModifiedByFormat	  "%<Auto>"
   LastModifiedBy	  "rho"
   ModifiedDateFormat	  "%<Auto>"
-  LastModifiedDate	  "Fri Jan 30 03:14:15 2015"
+  LastModifiedDate	  "Tue Oct  4 22:41:16 2016"
   RTWModifiedTimeStamp	  0
-  ModelVersionFormat	  "1.%<AutoIncrement:13>"
+  ModelVersionFormat	  "1.%<AutoIncrement:16>"
   ConfigurationManager	  "None"
   SimulationMode	  "normal"
   LinearizationMsg	  "none"
@@ -286,17 +287,17 @@ Model {
 	  TargetBitPerChar	  8
 	  TargetBitPerShort	  16
 	  TargetBitPerInt	  32
-	  TargetBitPerLong	  32
+	  TargetBitPerLong	  64
 	  TargetShiftRightIntArith on
 	  TargetIntDivRoundTo	  "Undefined"
-	  TargetEndianess	  "Unspecified"
-	  TargetWordSize	  32
+	  TargetEndianess	  "LittleEndian"
+	  TargetWordSize	  64
 	  TargetTypeEmulationWarnSuppressLevel 0
 	  TargetPreprocMaxBitsSint 32
 	  TargetPreprocMaxBitsUint 32
-	  TargetHWDeviceType	  "Specified"
+	  TargetHWDeviceType	  "MATLAB Host"
 	  TargetUnknown		  off
-	  ProdEqTarget		  on
+	  ProdEqTarget		  off
 	}
 	Simulink.ModelReferenceCC {
 	  $ObjectID		  7
@@ -336,7 +337,7 @@ Model {
 	  ProfileTLC		  off
 	  TLCDebug		  off
 	  TLCCoverage		  off
-	  TLCAssert		  off
+	  TLCAssert		  on
 	  ProcessScriptMode	  "Default"
 	  ConfigurationMode	  "Optimized"
 	  ProcessScript		  "rtairos_make_rtw_hook"
@@ -467,6 +468,39 @@ Model {
 	      AutosarCompliant	      off
 	      SystemTargetFile	      "rtairos.tlc"
 	      DialogCategory	      0
+	      CustomProperty {
+		DataType		"string"
+		Name			"namespace"
+		Value			"demo"
+	      }
+	      CustomProperty {
+		DataType		"int32"
+		Name			"rosRate"
+		Value			10
+	      }
+	      CustomProperty {
+		DataType		"int32"
+		Name			"pubQueueSize"
+		Value			1
+	      }
+	      CustomProperty {
+		DataType		"int32"
+		Name			"subQueueSize"
+		Value			5
+	      }
+	      CustomProperty {
+		DataType		"RTWOptions_EnumType__rtw_c_rtairos_rtairos_exposeParams"
+		EnumStrPairs {
+		  Value			  0
+		  String		  "no"
+		  Value			  1
+		  String		  "read-only"
+		  Value			  2
+		  String		  "writeable"
+		}
+		Name			"exposeParams"
+		Value			"read-only"
+	      }
 	    }
 	    PropName		    "Components"
 	  }
@@ -488,7 +522,7 @@ Model {
       }
       Name		      "Configuration"
       ExtraOptions	      "-aGenerateTraceInfo=0 "
-      CurrentDlgPage	      "Real-Time Workshop"
+      CurrentDlgPage	      "Real-Time Workshop/RTAI-ROS Options"
     }
     PropName		    "ConfigurationSets"
   }
@@ -835,20 +869,6 @@ Model {
     ZoomFactor		    "100"
     ReportName		    "simulink-default.rpt"
     Block {
-      BlockType		      Reference
-      Name		      "Config"
-      Ports		      []
-      Position		      [45, 362, 149, 432]
-      BackgroundColor	      "magenta"
-      SourceBlock	      "rtairos/ROS/Config"
-      SourceType	      ""
-      rate		      "10"
-      ns		      "demo"
-      pub_stack		      "1"
-      sub_stack		      "1"
-      show_params	      "Writeable"
-    }
-    Block {
       BlockType		      Constant
       Name		      "Constant"
       Position		      [175, 320, 205, 350]
@@ -940,7 +960,7 @@ Model {
       Position		      [370, 167, 440, 203]
       BackgroundColor	      "orange"
       SourceBlock	      "rtairos/ROS/Log"
-      SourceType	      ""
+      SourceType	      "ROS Logger"
       level		      "info"
       msg		      "Source signal changed"
       dataport		      off
@@ -1664,7 +1684,7 @@ MatData {
   NumRecords		  4
   DataRecord {
     Tag			    DataTag3
-    Data		    "  %)30     .    R ,   8    (     @         %    \"     $    !     0         %  0 $0    $   #,    =F5R:69Y0FQK4&%T:',   !V97)I9GE\";&M(86YD;&5S '9N=DUG<DED>           86-T:79E1W)O=7        !R97%$:7-P4')C;G0      &)L:T1I<W!-;V1E        9W)O=7!#;G0           !G<F]U<%)E<4-N=        &=R;W5P1$]/4E-I9       ;6]D96Q(              !B;&]C:T@              &]V97)I9&53971T:6YG<P        X    P    !@    @    &          4    (               !          D         #@   #     &    \"     8         !0    @               $         \"0         .    ,     8    (    !@         %    \"                0         )          X    X    !@    @    &          4    (     0    $    !          D    (            \\#\\.    ,     8    (    !@         %    \"                0         )          X    P    !@    @    &          4    (               !          D         #@   #@    &    \"     8         !0    @    !     0    $         \"0    @           #P/PX    P    !@    @    &          4    (               !          D         #@   #     &    \"     8         !0    @               $         \"0         .    .     8    (    !@         %    \"     $    !     0         )    \"         !0 #) #@   #@    &    \"     8         !0    @    !     0    $         \"0    @         .(!)0 X    P    !@    @    &          4    (               !          D         "
+    Data		    "  %)30     .    R ,   8    (     @         %    \"     $    !     0         %  0 $0    $   #,    =F5R:69Y0FQK4&%T:',   !V97)I9GE\";&M(86YD;&5S '9N=DUG<DED>           86-T:79E1W)O=7        !R97%$:7-P4')C;G0      &)L:T1I<W!-;V1E        9W)O=7!#;G0           !G<F]U<%)E<4-N=        &=R;W5P1$]/4E-I9       ;6]D96Q(              !B;&]C:T@              &]V97)I9&53971T:6YG<P        X    P    !@    @    &          4    (               !          D         #@   #     &    \"     8         !0    @               $         \"0         .    ,     8    (    !@         %    \"                0         )          X    X    !@    @    &          4    (     0    $    !          D    (            \\#\\.    ,     8    (    !@         %    \"                0         )          X    P    !@    @    &          4    (               !          D         #@   #@    &    \"     8         !0    @    !     0    $         \"0    @           #P/PX    P    !@    @    &          4    (               !          D         #@   #     &    \"     8         !0    @               $         \"0         .    .     8    (    !@         %    \"     $    !     0         )    \"            @A #@   #@    &    \"     8         !0    @    !     0    $         \"0    @         * !\"0 X    P    !@    @    &          4    (               !          D         "
   }
   DataRecord {
     Tag			    DataTag2
@@ -1672,7 +1692,7 @@ MatData {
   }
   DataRecord {
     Tag			    DataTag1
-    Data		    "  %)30     .    R ,   8    (     @         %    \"     $    !     0         %  0 $0    $   #,    =F5R:69Y0FQK4&%T:',   !V97)I9GE\";&M(86YD;&5S '9N=DUG<DED>           86-T:79E1W)O=7        !R97%$:7-P4')C;G0      &)L:T1I<W!-;V1E        9W)O=7!#;G0           !G<F]U<%)E<4-N=        &=R;W5P1$]/4E-I9       ;6]D96Q(              !B;&]C:T@              &]V97)I9&53971T:6YG<P        X    P    !@    @    &          4    (               !          D         #@   #     &    \"     8         !0    @               $         \"0         .    ,     8    (    !@         %    \"                0         )          X    X    !@    @    &          4    (     0    $    !          D    (            \\#\\.    ,     8    (    !@         %    \"                0         )          X    P    !@    @    &          4    (               !          D         #@   #@    &    \"     8         !0    @    !     0    $         \"0    @           #P/PX    P    !@    @    &          4    (               !          D         #@   #     &    \"     8         !0    @               $         \"0         .    .     8    (    !@         %    \"     $    !     0         )    \"         !0 #) #@   #@    &    \"     8         !0    @    !     0    $         \"0    @         )(!&0 X    P    !@    @    &          4    (               !          D         "
+    Data		    "  %)30     .    R ,   8    (     @         %    \"     $    !     0         %  0 $0    $   #,    =F5R:69Y0FQK4&%T:',   !V97)I9GE\";&M(86YD;&5S '9N=DUG<DED>           86-T:79E1W)O=7        !R97%$:7-P4')C;G0      &)L:T1I<W!-;V1E        9W)O=7!#;G0           !G<F]U<%)E<4-N=        &=R;W5P1$]/4E-I9       ;6]D96Q(              !B;&]C:T@              &]V97)I9&53971T:6YG<P        X    P    !@    @    &          4    (               !          D         #@   #     &    \"     8         !0    @               $         \"0         .    ,     8    (    !@         %    \"                0         )          X    X    !@    @    &          4    (     0    $    !          D    (            \\#\\.    ,     8    (    !@         %    \"                0         )          X    P    !@    @    &          4    (               !          D         #@   #@    &    \"     8         !0    @    !     0    $         \"0    @           #P/PX    P    !@    @    &          4    (               !          D         #@   #     &    \"     8         !0    @               $         \"0         .    .     8    (    !@         %    \"     $    !     0         )    \"            @A #@   #@    &    \"     8         !0    @    !     0    $         \"0    @         0  ^0 X    P    !@    @    &          4    (               !          D         "
   }
   DataRecord {
     Tag			    DataTag0

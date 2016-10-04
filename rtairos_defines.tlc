@@ -5,6 +5,22 @@
 #define RTAIROS_H_
 
 const char progDesc[] = "%<desc>";
+%if ISEMPTY(nodeName)
+const char rosNode[] = "%<modelName>";
+%else
+const char rosNode[] = "%<nodeName>";
+%endif
+char rosNamespace[MAX_NAMES_SIZE] = "%<namespace>";	// not safe
+unsigned double rosRate = %<rosRate>;
+unsigned int pubQueueSize = %<pubQueueSize>;
+unsigned int subQueueSize = %<subQueueSize>;
+%if ISEQUAL("%<exposeParams>", "read-only")
+unsigned int exposeParams = 1;
+%elseif ISEQUAL("%<exposeParams>", "writeable")
+unsigned int exposeParams = 2;
+%else
+unsigned int exposeParams = 0;
+%endif
 
 #endif
 %closefile file

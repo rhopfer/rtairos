@@ -51,7 +51,6 @@
 #define MAX_NAMES_SIZE       256
 #define MAX_SHMDATA_SIZE     100
 #define MAX_LOG_MSG_SIZE     256
-#define MAX_DESC_SIZE		256
 
 #define LOG_DEBUG 1
 #define LOG_INFO  2
