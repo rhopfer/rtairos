@@ -34,6 +34,7 @@ extern "C" {
 
 #undef RT	// FIX for boost
 #include "ros_defines.h"
+#include "rtairos.h"
 #include <ros/ros.h>
 #include <std_msgs/Empty.h>
 #include <std_msgs/Time.h>

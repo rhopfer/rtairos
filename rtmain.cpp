@@ -214,7 +214,6 @@ SimStruct *rtaiSynchronoscope[MAX_RTAI_SYNCHS];
 rosConfig_t rosConfig = {ROS_SAMPLETIME, "", true, PUBLISHER_STACK_SIZE, SUBSCRIBER_STACK_SIZE};
 rosBlockConfig_t rosBlockConfigs[MAX_ROS_BLOCKS];
 unsigned int numRosBlocks = 0;
-const char *rosNode = STR(MODEL);
 
 
 #define MAX_COMEDI_DEVICES        10

@@ -2,7 +2,6 @@
 
 extern RT_TASK *rt_MainTask;
 static RT_TASK *rt_rosTask;
-extern rosConfig_t rosConfig;
 extern const char *rosNode;
 extern RT_MODEL *rtM;
 extern volatile int Verbose;
@@ -44,12 +43,12 @@ static std::string sanitizeName(std::string str) {
 }
 
 static void secureRosConfig() {
-	std::string ns(rosConfig.ns);
+	std::string ns(rosNamespace);
 	ns = sanitizeName(ns);
-	memcpy(rosConfig.ns, ns.c_str(), MAX_NAMES_SIZE);
-	if (rosConfig.rate <= 0) {
-		ROS_WARN("Illegal ROS rate %f found. Set to default %f", rosConfig.rate, (double)ROS_SAMPLETIME);
-		rosConfig.rate = ROS_SAMPLETIME;
+	memcpy(rosNamespace, ns.c_str(), MAX_NAMES_SIZE);
+	if (rosRate <= 0) {
+		ROS_WARN("Illegal ROS rate %f found. Set to default %f", rosRate, (double)ROS_SAMPLETIME);
+		rosRate = ROS_SAMPLETIME;
 	}
 }
 
@@ -357,7 +356,7 @@ void RosBroadcaster::send() {
 
 
 bool RosService::callback(std_srvs::Empty::Request&, std_srvs::Empty::Response&) {
-	ros::Rate loop_rate(rosConfig.rate);
+	ros::Rate loop_rate(rosRate);
 	if (!this->sem_wait()) return false;
 	this->shm->state = STATE_REQUEST;
 	this->sem_signal();
@@ -497,15 +496,15 @@ bool RosInterface::refreshParams(std_srvs::Empty::Request&, std_srvs::Empty::Res
 void RosInterface::printInitMessage(int pub, int sub, int srv, int br, int jnt) {
 	if (Verbose) {
 		std::cout << "\nROS Task\n========\n";
-		std::cout << "  Rate                   : " << rosConfig.rate << " [Hz]" << std::endl;
+		std::cout << "  Rate                   : " << rosRate << " [Hz]" << std::endl;
 		std::cout << "  Node                   : " << rosNode << std::endl;
-		std::cout << "  Namespace              : " << rosConfig.ns << std::endl;
-		std::cout << "  Publisher stack size   : " << rosConfig.pubStackSize << std::endl;
-		std::cout << "  Subscriber stack size  : " << rosConfig.subStackSize << std::endl;
+		std::cout << "  Namespace              : " << rosNamespace << std::endl;
+		std::cout << "  Publisher stack size   : " << pubQueueSize << std::endl;
+		std::cout << "  Subscriber stack size  : " << subQueueSize << std::endl;
 		std::cout << "  Expose params          : ";
-		if (rosConfig.exposeParams > 1) {
+		if (exposeParams > 1) {
 			std::cout << "Yes (writeable)";
-		} else if (rosConfig.exposeParams > 0)	{
+		} else if (exposeParams > 0)	{
 			std::cout << "Yes (read-only)";
 		} else {
 			std::cout << "No";
@@ -530,7 +529,7 @@ void *RosInterface::init(void) {
 
 	secureRosConfig();
 
-	ros::NodeHandle nh(rosConfig.ns);
+	ros::NodeHandle nh(rosNamespace);
 	ros::Publisher joint_pub;
 
 	for (unsigned int i = 0; i < numRosBlocks; ++i) {
@@ -547,27 +546,27 @@ void *RosInterface::init(void) {
 			bool unknown = false;
 
 			if (subscriber->subType == SUBSCRIBER_FLOAT64) {
-				subscriber->sub = nh.subscribe<std_msgs::Float64>(subscriber->name, rosConfig.subStackSize, &RosSubscriber::callback, subscriber);
+				subscriber->sub = nh.subscribe<std_msgs::Float64>(subscriber->name, subQueueSize, &RosSubscriber::callback, subscriber);
 			} else if (subscriber->subType == SUBSCRIBER_INT32) {
-				subscriber->sub = nh.subscribe<std_msgs::Int32>(subscriber->name, rosConfig.subStackSize, &RosSubscriber::callback, subscriber);
+				subscriber->sub = nh.subscribe<std_msgs::Int32>(subscriber->name, subQueueSize, &RosSubscriber::callback, subscriber);
 			} else if (subscriber->subType == SUBSCRIBER_BOOL) {
-				subscriber->sub = nh.subscribe<std_msgs::Bool>(subscriber->name, rosConfig.subStackSize, &RosSubscriber::callback, subscriber);
+				subscriber->sub = nh.subscribe<std_msgs::Bool>(subscriber->name, subQueueSize, &RosSubscriber::callback, subscriber);
 			} else if (subscriber->subType == SUBSCRIBER_TIME) {
-				subscriber->sub = nh.subscribe<std_msgs::Time>(subscriber->name, rosConfig.subStackSize, &RosSubscriber::callback, subscriber);
+				subscriber->sub = nh.subscribe<std_msgs::Time>(subscriber->name, subQueueSize, &RosSubscriber::callback, subscriber);
 			} else if (subscriber->subType == SUBSCRIBER_FLOAT64ARRAY) {
-				subscriber->sub = nh.subscribe<std_msgs::Float64MultiArray>(subscriber->name, rosConfig.subStackSize, &RosSubscriber::callback, subscriber);
+				subscriber->sub = nh.subscribe<std_msgs::Float64MultiArray>(subscriber->name, subQueueSize, &RosSubscriber::callback, subscriber);
 			} else if (subscriber->subType == SUBSCRIBER_POINT) {
-				subscriber->sub = nh.subscribe<geometry_msgs::Point>(subscriber->name, rosConfig.subStackSize, &RosSubscriber::callback, subscriber);
+				subscriber->sub = nh.subscribe<geometry_msgs::Point>(subscriber->name, subQueueSize, &RosSubscriber::callback, subscriber);
 			} else if (subscriber->subType == SUBSCRIBER_POINT_STAMPED) {
-				subscriber->sub = nh.subscribe<geometry_msgs::PointStamped>(subscriber->name, rosConfig.subStackSize, &RosSubscriber::callback, subscriber);
+				subscriber->sub = nh.subscribe<geometry_msgs::PointStamped>(subscriber->name, subQueueSize, &RosSubscriber::callback, subscriber);
 			} else if (subscriber->subType == SUBSCRIBER_TWIST) {
-				subscriber->sub = nh.subscribe<geometry_msgs::Twist>(subscriber->name, rosConfig.subStackSize, &RosSubscriber::callback, subscriber);
+				subscriber->sub = nh.subscribe<geometry_msgs::Twist>(subscriber->name, subQueueSize, &RosSubscriber::callback, subscriber);
 			} else if (subscriber->subType == SUBSCRIBER_TWIST_STAMPED) {
-				subscriber->sub = nh.subscribe<geometry_msgs::TwistStamped>(subscriber->name, rosConfig.subStackSize, &RosSubscriber::callback, subscriber);
+				subscriber->sub = nh.subscribe<geometry_msgs::TwistStamped>(subscriber->name, subQueueSize, &RosSubscriber::callback, subscriber);
 			} else if (subscriber->subType == SUBSCRIBER_POSE2D) {
-				subscriber->sub = nh.subscribe<geometry_msgs::Pose2D>(subscriber->name, rosConfig.subStackSize, &RosSubscriber::callback, subscriber);
+				subscriber->sub = nh.subscribe<geometry_msgs::Pose2D>(subscriber->name, subQueueSize, &RosSubscriber::callback, subscriber);
 			} else if (subscriber->subType == SUBSCRIBER_JOY) {
-				subscriber->sub = nh.subscribe<sensor_msgs::Joy>(subscriber->name, rosConfig.subStackSize, &RosSubscriber::callback, subscriber);
+				subscriber->sub = nh.subscribe<sensor_msgs::Joy>(subscriber->name, subQueueSize, &RosSubscriber::callback, subscriber);
 			} else {
 				unknown = true;
 				ROS_ERROR("Subscriber: Unknown message type %i in %s", subscriber->subType, subscriber->name.c_str());
@@ -584,25 +583,25 @@ void *RosInterface::init(void) {
 			bool unknown = false;
 
 			if (publisher->subType == PUBLISHER_FLOAT64) {
-				publisher->pub = nh.advertise<std_msgs::Float64>(publisher->name, rosConfig.pubStackSize);
+				publisher->pub = nh.advertise<std_msgs::Float64>(publisher->name, pubQueueSize);
 			} else if (publisher->subType == PUBLISHER_INT32) {
-				publisher->pub = nh.advertise<std_msgs::Int32>(publisher->name, rosConfig.pubStackSize);
+				publisher->pub = nh.advertise<std_msgs::Int32>(publisher->name, pubQueueSize);
 			} else if (publisher->subType == PUBLISHER_BOOL) {
-				publisher->pub = nh.advertise<std_msgs::Bool>(publisher->name, rosConfig.pubStackSize);
+				publisher->pub = nh.advertise<std_msgs::Bool>(publisher->name, pubQueueSize);
 			} else if (publisher->subType == PUBLISHER_TIME) {
-				publisher->pub = nh.advertise<std_msgs::Time>(publisher->name, rosConfig.pubStackSize);
+				publisher->pub = nh.advertise<std_msgs::Time>(publisher->name, pubQueueSize);
 			} else if (publisher->subType == PUBLISHER_FLOAT64ARRAY) {
-				publisher->pub = nh.advertise<std_msgs::Float64MultiArray>(publisher->name, rosConfig.pubStackSize);
+				publisher->pub = nh.advertise<std_msgs::Float64MultiArray>(publisher->name, pubQueueSize);
 			} else if (publisher->subType == PUBLISHER_POINT) {
-				publisher->pub = nh.advertise<geometry_msgs::Point>(publisher->name, rosConfig.pubStackSize);
+				publisher->pub = nh.advertise<geometry_msgs::Point>(publisher->name, pubQueueSize);
 			} else if (publisher->subType == PUBLISHER_POINT_STAMPED) {
-				publisher->pub = nh.advertise<geometry_msgs::PointStamped>(publisher->name, rosConfig.pubStackSize);
+				publisher->pub = nh.advertise<geometry_msgs::PointStamped>(publisher->name, pubQueueSize);
 			} else if (publisher->subType == PUBLISHER_TWIST) {
-				publisher->pub = nh.advertise<geometry_msgs::Twist>(publisher->name, rosConfig.pubStackSize);
+				publisher->pub = nh.advertise<geometry_msgs::Twist>(publisher->name, pubQueueSize);
 			} else if (publisher->subType == PUBLISHER_TWIST_STAMPED) {
-				publisher->pub = nh.advertise<geometry_msgs::TwistStamped>(publisher->name, rosConfig.pubStackSize);
+				publisher->pub = nh.advertise<geometry_msgs::TwistStamped>(publisher->name, pubQueueSize);
 			} else if (publisher->subType == PUBLISHER_POSE2D) {
-				publisher->pub = nh.advertise<geometry_msgs::Pose2D>(publisher->name, rosConfig.pubStackSize);
+				publisher->pub = nh.advertise<geometry_msgs::Pose2D>(publisher->name, pubQueueSize);
 			} else {
 				ROS_ERROR("Publisher: Unknown message type in %s", publisher->name.c_str());
 			}
@@ -642,18 +641,18 @@ void *RosInterface::init(void) {
 	// Parameters
 	ros::ServiceServer srvSetParam;
 	ros::ServiceServer srvRefreshParam;
-	if (rosConfig.exposeParams > 0) {
+	if (exposeParams > 0) {
 		this->publishParams();
 		snprintf(srvName, 100, "/%s/refresh_parameters", rosNode);
 		srvRefreshParam = nh.advertiseService(srvName, &RosInterface::refreshParams, this);
-		if (rosConfig.exposeParams > 1) {
+		if (exposeParams > 1) {
 			snprintf(srvName, 100, "/%s/set_parameters", rosNode);
 			srvSetParam = nh.advertiseService(srvName, &RosInterface::setParams, this);
 		}
 	}
 
 	if (jointstates.size() > 0) {
-		joint_pub = nh.advertise<sensor_msgs::JointState>("/joint_states", rosConfig.pubStackSize);
+		joint_pub = nh.advertise<sensor_msgs::JointState>("/joint_states", pubQueueSize);
 	}
 
 	this->printInitMessage(publishers.size(), subscribers.size(), services.size(), broadcasters.size(), jointstates.size());
@@ -670,7 +669,7 @@ void *RosInterface::init(void) {
 		fprintf(stderr, "Cannot init rt_rosTask\n");
 	}
 
-	ros::Rate loop_rate(rosConfig.rate);
+	ros::Rate loop_rate(rosRate);
 	loop_rate.sleep();
 	ROS_INFO("Entering loop");
 	while (!endRos) {
@@ -730,7 +729,7 @@ void *RosInterface::init(void) {
 		delete(jointstates[i]);
 	}
 	jointstates.clear();
-	if (rosConfig.exposeParams) {
+	if (exposeParams) {
 		this->cleanParams();
 	}
 
