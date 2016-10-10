@@ -5,7 +5,7 @@
   Daniele Gasperini (daniele.gasperini@elet.polimi.it)
 
   Modified August 2009 by Henrik Slotholt (rtai@slotholt.net)
-  Modified 2014-2015 by Roland Hopferwieser
+  Modified 2014-2016 by Roland Hopferwieser
 
   This library is free software; you can redistribute it and/or
   modify it under the terms of the GNU Lesser General Public
@@ -66,7 +66,10 @@ extern "C" {
 #include <ros/ros.h>
 #define RT
 
-#include "rtairos.h"
+#include "build_config.h"
+# if COMPAT_VERSION != 1
+# error "Generated code is incompatible with this version"
+#endif
 
 #define EXPAND_CONCAT(name1,name2)	name1 ## name2
 #define CONCAT(name1,name2)		EXPAND_CONCAT(name1,name2)
@@ -211,10 +214,15 @@ SimStruct *rtaiLed[MAX_RTAI_LEDS];
 SimStruct *rtaiMeter[MAX_RTAI_METERS];
 SimStruct *rtaiSynchronoscope[MAX_RTAI_SYNCHS];
 
-rosConfig_t rosConfig = {ROS_SAMPLETIME, "", true, PUBLISHER_STACK_SIZE, SUBSCRIBER_STACK_SIZE};
 rosBlockConfig_t rosBlockConfigs[MAX_ROS_BLOCKS];
 unsigned int numRosBlocks = 0;
-
+const char* rosNode = STR(CONFIG_NODE);
+const char* rosNamespace = STR(CONFIG_NAMESPACE);
+const char* progDesc = STR(CONFIG_DESCRIPTION);
+double rosRate = CONFIG_RATE;
+unsigned int pubQueueSize = CONFIG_PUBLISHER_QUEUE_SIZE;
+unsigned int subQueueSize = CONFIG_SUBSCRIBER_QUEUE_SIZE;
+unsigned int exposeParams = CONFIG_EXPOSE_PARAMS;
 
 #define MAX_COMEDI_DEVICES        10
 
@@ -1101,10 +1109,10 @@ static struct poptOption long_options[] = {
 	{ "external", 'e', POPT_ARG_NONE, (int *)&ExternalTimer, 'e', "RT-model timed by an external resume", 0 },
 	{ "oneshot", 'o', POPT_ARG_NONE, (int *)&OneShot, 'o', "The hard timer will run in oneshot mode", 0 },
 	{ "stack", 'm', POPT_ARG_INT, (int *)&StackInc, 'm', "Set a guaranteed stack size extension", STR(DEFAULT_STACKING) },
-	{ "rosnode", 'N', POPT_ARG_STRING, &rosNode, 'N', "Set the name of the ros node", STR(MODEL) },
+	{ "rosnode", 'N', POPT_ARG_STRING, &rosNode, 'N', "Set the name of the ros node", rosNode },
 	{ "random", 0, POPT_ARG_NONE, 0, OPT_RANDOM, "Adds a random number to the end of your node's name, to make it unique", 0 },
 	{ "norosout", 0, POPT_ARG_NONE, 0, OPT_NOROSOUT, "Don't broadcast rosconsole output to the /rosout topic", 0 },
-//	{ "namespace", 'n', POPT_ARG_STRING, &rosNamespace, 'n', "set a namespace", rosNamespace },
+	{ "namespace", 'n', POPT_ARG_STRING, &rosNamespace, 'n', "set a namespace", rosNamespace },
 	//- POPT_AUTOHELP
 	{ 0, 0, 0, 0, 0, 0 }
 };
@@ -1203,5 +1211,6 @@ int main(int argc, char **argv) {
 		print_rtailab();
 	}
 
-	return rt_Main(MODEL, Priority);
+	rt_Main(MODEL, Priority);
+	return 0;
 }

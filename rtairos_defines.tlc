@@ -1,25 +1,30 @@
 %assign desc = FEVAL("get_param", "%<modelName>", "Description")
 
-%openfile file = "rtairos.h"
-#ifndef RTAIROS_H_
-#define RTAIROS_H_
+%openfile file = "build_config.h"
+#ifndef BUILD_CONFIG_H_
+#define BUILD_CONFIG_H_
 
-const char progDesc[] = "%<desc>";
+#define COMPAT_VERSION 1
+
+#define CONFIG_DESCRIPTION %<desc>
+
 %if ISEMPTY(nodeName)
-const char rosNode[] = "%<modelName>";
+#define CONFIG_NODE %<modelName>
 %else
-const char rosNode[] = "%<nodeName>";
+#define CONFIG_NODE %<nodeName>
 %endif
-char rosNamespace[MAX_NAMES_SIZE] = "%<namespace>";	// not safe
-unsigned double rosRate = %<rosRate>;
-unsigned int pubQueueSize = %<pubQueueSize>;
-unsigned int subQueueSize = %<subQueueSize>;
+
+#define CONFIG_NAMESPACE %<namespace>
+#define CONFIG_RATE %<rosRate>;
+#define CONFIG_PUBLISHER_QUEUE_SIZE %<pubQueueSize>
+#define CONFIG_SUBSCRIBER_QUEUE_SIZE %<subQueueSize>
+#
 %if ISEQUAL("%<exposeParams>", "read-only")
-unsigned int exposeParams = 1;
+#define CONFIG_EXPOSE_PARAMS 1
 %elseif ISEQUAL("%<exposeParams>", "writeable")
-unsigned int exposeParams = 2;
+#define CONFIG_EXPOSE_PARAMS 2
 %else
-unsigned int exposeParams = 0;
+#define CONFIG_EXPOSE_PARAMS 0
 %endif
 
 #endif

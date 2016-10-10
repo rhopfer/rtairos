@@ -1,8 +1,14 @@
 #include "RosInterface.h"
 
+extern double rosRate;
+extern unsigned int pubQueueSize;
+extern unsigned int subQueueSize;
+extern unsigned int exposeParams;
+extern const char* rosNode;
+extern const char* rosNamespace;
+
 extern RT_TASK *rt_MainTask;
 static RT_TASK *rt_rosTask;
-extern const char *rosNode;
 extern RT_MODEL *rtM;
 extern volatile int Verbose;
 extern unsigned int numRosBlocks;
@@ -45,7 +51,8 @@ static std::string sanitizeName(std::string str) {
 static void secureRosConfig() {
 	std::string ns(rosNamespace);
 	ns = sanitizeName(ns);
-	memcpy(rosNamespace, ns.c_str(), MAX_NAMES_SIZE);
+
+	rosNamespace = ns.c_str();
 	if (rosRate <= 0) {
 		ROS_WARN("Illegal ROS rate %f found. Set to default %f", rosRate, (double)ROS_SAMPLETIME);
 		rosRate = ROS_SAMPLETIME;
@@ -656,7 +663,6 @@ void *RosInterface::init(void) {
 	}
 
 	this->printInitMessage(publishers.size(), subscribers.size(), services.size(), broadcasters.size(), jointstates.size());
-
 
 	// Init soft realtime task in user space
 	rt_allow_nonroot_hrt();
