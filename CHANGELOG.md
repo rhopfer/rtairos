@@ -1,6 +1,6 @@
 # Change Log
 
-## [Unreleased]
+## [1.1] - 2017-01-10
 ### Changed
 - Use libpopt for command line parsing.
 - Don't start host interface task by default.
