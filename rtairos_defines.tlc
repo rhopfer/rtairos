@@ -15,7 +15,7 @@
 %endif
 
 #define CONFIG_NAMESPACE %<namespace>
-#define CONFIG_RATE %<rosRate>;
+#define CONFIG_RATE %<rosRate>
 #define CONFIG_PUBLISHER_QUEUE_SIZE %<pubQueueSize>
 #define CONFIG_SUBSCRIBER_QUEUE_SIZE %<subQueueSize>
 #

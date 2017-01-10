@@ -22,7 +22,7 @@
   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
 */
 
-#define RTAIROS_VERSION "1.0"
+#define RTAIROS_VERSION "1.1"
 #define RTAIROS_NAME "RTAI-ROS"
 
 #define _XOPEN_SOURCE	600
@@ -66,6 +66,7 @@ extern "C" {
 #include <ros/ros.h>
 #define RT
 
+/* Check compatibility of generated code */
 #include "build_config.h"
 # if COMPAT_VERSION != 1
 # error "Generated code is incompatible with this version"
@@ -1109,10 +1110,12 @@ static struct poptOption long_options[] = {
 	{ "external", 'e', POPT_ARG_NONE, (int *)&ExternalTimer, 'e', "RT-model timed by an external resume", 0 },
 	{ "oneshot", 'o', POPT_ARG_NONE, (int *)&OneShot, 'o', "The hard timer will run in oneshot mode", 0 },
 	{ "stack", 'm', POPT_ARG_INT, (int *)&StackInc, 'm', "Set a guaranteed stack size extension", STR(DEFAULT_STACKING) },
-	{ "rosnode", 'N', POPT_ARG_STRING, &rosNode, 'N', "Set the name of the ros node", rosNode },
+	{ "rosnode", 'N', POPT_ARG_STRING, &rosNode, 'N', "Set the name of the ROS node", rosNode },
 	{ "random", 0, POPT_ARG_NONE, 0, OPT_RANDOM, "Adds a random number to the end of your node's name, to make it unique", 0 },
 	{ "norosout", 0, POPT_ARG_NONE, 0, OPT_NOROSOUT, "Don't broadcast rosconsole output to the /rosout topic", 0 },
-	{ "namespace", 'n', POPT_ARG_STRING, &rosNamespace, 'n', "set a namespace", rosNamespace },
+	{ "namespace", 'n', POPT_ARG_STRING, &rosNamespace, 'n', "Set the ROS namespace", rosNamespace },
+	{ "rosrate", 'r', POPT_ARG_DOUBLE, &rosRate, 'r', "Set the ROS rate", STR(CONFIG_RATE) },
+	{ "params", 'P' , POPT_ARG_INT, &exposeParams, 'P', "Expose params (0: no, 1: read-only, 2: writeable)", STR(CONFIG_EXPOSE_PARAMS) },
 	//- POPT_AUTOHELP
 	{ 0, 0, 0, 0, 0, 0 }
 };
@@ -1125,7 +1128,7 @@ void print_usage(poptContext optCon, int exitcode, const char *error, const char
 }
 
 static void print_version() {
-    fprintf(stderr, "%s %s\n", RTAIROS_NAME, RTAIROS_VERSION);
+    fprintf(stderr, "%s %s (compat version %i)\n", RTAIROS_NAME, RTAIROS_VERSION, COMPAT_VERSION);
     exit(0);
 }
 
